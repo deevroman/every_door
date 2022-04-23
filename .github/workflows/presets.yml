@@ -1,0 +1,27 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Dart
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - run: wget https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2
+      - run: bzip2 -d taginfo-db.db.bz2
+      - run: cd tools && ./update.sh taginfo-db.db && cd ..
+      - uses: actions/upload-artifact@v2
+        with:
+          name: presets.yml
+          path: assets/presets.yml
+          retention-days: 10
