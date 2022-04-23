@@ -21,7 +21,7 @@ jobs:
           flutter-version: '3.0.5'
       - run: flutter config --no-analytics
       - run: flutter upgrade
-    
+
       - name: Cache
         id: cache-presets
         uses: pat-s/always-upload-cache@v3.0.1
@@ -42,9 +42,9 @@ jobs:
       - env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         run: echo -n $KEY_JKS | base64 -d > android/key.jks
-      
+
       - run: flutter pub get
-      
+
       - env:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           ALIAS_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
