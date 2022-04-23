@@ -20,8 +20,8 @@ jobs:
       - name: download & unzip
         if: steps.cache-primes.outputs.cache-hit != 'true'
         run: |
-        wget -q https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2
-        bzip2 -d taginfo-db.db.bz2
+          wget -q https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2
+          bzip2 -d taginfo-db.db.bz2
 
       - name: generate presets.db
         if: steps.cache-primes.outputs.cache-hit != 'true'
