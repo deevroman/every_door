@@ -19,7 +19,7 @@ jobs:
 
       - run: wget -q https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2
       - run: bzip2 -d taginfo-db.db.bz2
-      - run: cd tools && ./update.sh taginfo-db.db && cd ..
+      - run: cd tools && ./update.sh ../taginfo-db.db && cd ..
       - uses: actions/upload-artifact@v2
         with:
           name: presets.yml
