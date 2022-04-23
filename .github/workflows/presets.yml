@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - run: python setup.py bdist_wheel
       - run: wget -q https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2
       - run: bzip2 -d taginfo-db.db.bz2
       - run: cd tools && ./update.sh ../taginfo-db.db && cd ..
