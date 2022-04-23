@@ -12,10 +12,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  make-presets:
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - uses: actions/checkout@v2
 
