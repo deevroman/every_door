@@ -4,9 +4,14 @@
 
 _Unreleased_
 
+* Micromapping mode now has coloured dots instead of tiles and numbers.
 * Added app version to the settings screen.
 * Fixed location scopes in the app.
-* Made hint labels lighter.
+* Made hint labels lighter in text fields.
+* Button in hours editor to use the most common value from around.
+* Button to delete all downloaded data in settings.
+* Increased re-check interval to 2 weeks.
+* Support for landscape screen orientation.
 
 ## 0.1.7
 
