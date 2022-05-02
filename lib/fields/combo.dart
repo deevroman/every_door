@@ -2,6 +2,7 @@ import 'package:every_door/constants.dart';
 import 'package:every_door/models/amenity.dart';
 import 'package:flutter/material.dart';
 import 'package:every_door/models/field.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'helpers/combo_page.dart';
 
@@ -133,27 +134,7 @@ class _SingularComboFieldState extends State<SingularComboField> {
 
   @override
   Widget build(BuildContext context) {
-    var items = widget.field.options
-        .map((e) => DropdownMenuItem<String>(
-              child: Text(e.label ?? e.value),
-              value: e.value,
-            ))
-        .toList();
-    if (widget.field.type == ComboType.regular) {
-      // Add empty option
-      items.insert(
-          0,
-          DropdownMenuItem(
-            child: Text('<empty>'),
-            value: '<empty>',
-          ));
-    }
-    if (widget.field.customValues) {
-      items.add(DropdownMenuItem(
-        child: Text('Other...'),
-        value: '',
-      ));
-    }
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       child: SizedBox(
         height: 40.0,
@@ -161,8 +142,14 @@ class _SingularComboFieldState extends State<SingularComboField> {
           children: [
             Expanded(
                 child: Text(
-              widget.element[widget.field.key] ?? '',
-              style: kFieldTextStyle,
+              widget.element[widget.field.key] ?? loc.fieldComboChoose + '...',
+              style: widget.element[widget.field.key] != null
+                  ? kFieldTextStyle
+                  : kFieldTextStyle.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.3)),
             )),
             Icon(Icons.arrow_drop_down),
           ],

@@ -12,6 +12,7 @@ import 'package:every_door/providers/presets.dart';
 import 'package:every_door/screens/editor/map_chooser.dart';
 import 'package:every_door/helpers/tile_layers.dart';
 import 'package:every_door/screens/editor/tags.dart';
+import 'package:every_door/screens/editor/types.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -87,6 +88,10 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
         final bool needsStdFields =
             preset!.fields.length <= 1 || needsStandardFields();
         stdFields = await presets.getStandardFields(locale, needsStdFields);
+        // Remove the field for level if the object is a building.
+        if (amenity['building'] != null) {
+          stdFields.removeWhere((e) => e.key == 'level');
+        }
       } else {
         stdFields = [];
       }
@@ -124,6 +129,29 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
         moreFields.add(f);
       }
     }
+  }
+
+  changeType() async {
+    final newPreset = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => TypeChooserPage(
+                location: amenity.location,
+                launchEditor: false,
+              )),
+    );
+    if (newPreset == null) return;
+    final oldPreset = preset;
+    setState(() {
+      preset = null;
+      fields = [];
+      moreFields = [];
+      stdFields = [];
+    });
+    oldPreset?.doRemoveTags(amenity);
+    preset = newPreset;
+    preset!.doAddTags(amenity);
+    updatePreset(context, preset!.fromNSI);
   }
 
   saveAndClose() {
@@ -171,7 +199,10 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(preset?.name ?? amenity.name ?? 'Editor'),
+          title: GestureDetector(
+            child: Text(preset?.name ?? amenity.name ?? 'Editor'),
+            onTap: changeType,
+          ),
           actions: [
             IconButton(
               icon: Icon(Icons.table_rows),
@@ -260,7 +291,7 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
                           ),
                         ),
                       ),
-                      if (!canSave && amenity.isOld)
+                      if (!canSave && amenity.isOld && needsCheckDate(amenity.getFullTags()))
                         Container(
                           color: Colors.green,
                           child: IconButton(
@@ -330,6 +361,7 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
   }
 
   Widget buildMap(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -370,8 +402,26 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
                     options: MarkerLayerOptions(markers: [
                   Marker(
                     point: amenity.location,
-                    anchorPos: AnchorPos.exactly(Anchor(15.0, 5.0)),
-                    builder: (ctx) => Icon(Icons.location_pin),
+                    anchorPos: AnchorPos.exactly(Anchor(138.0, 5.0)),
+                    width: 150.0,
+                    height: 30.0,
+                    builder: (ctx) => Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(Icons.location_pin),
+                        SizedBox(width: 2.0),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 5.0),
+                          child: Text(loc.editorMove),
+                        ),
+                      ],
+                    ),
                   ),
                 ])),
               ],

@@ -8,6 +8,7 @@ import 'package:every_door/providers/geolocation.dart';
 import 'package:every_door/providers/imagery.dart';
 import 'package:every_door/providers/editor_mode.dart';
 import 'package:every_door/providers/legend.dart';
+import 'package:every_door/widgets/zoom_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -32,6 +33,7 @@ class AmenityMapController {
 class AmenityMap extends ConsumerStatefulWidget {
   final LatLng initialLocation;
   final List<OsmChange> amenities;
+  final List<LatLng> otherObjects;
   final void Function(LatLng)? onDrag;
   final void Function(LatLng)? onDragEnd;
   final void Function(LatLng)? onTrack;
@@ -39,6 +41,7 @@ class AmenityMap extends ConsumerStatefulWidget {
   final AmenityMapController? controller;
   final bool colorsFromLegend;
   final bool drawNumbers;
+  final bool drawZoomButtons;
 
   const AmenityMap({
     required this.initialLocation,
@@ -47,9 +50,11 @@ class AmenityMap extends ConsumerStatefulWidget {
     this.onTrack,
     this.onTap,
     this.amenities = const [],
+    this.otherObjects = const [],
     this.controller,
     this.drawNumbers = true,
     this.colorsFromLegend = false,
+    this.drawZoomButtons = false,
   });
 
   @override
@@ -231,10 +236,11 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
     });
 
     // Update colors when the legend is ready.
-    ref.listen(legendProvider, (_, next) {setState(() {});});
+    ref.listen(legendProvider, (_, next) {
+      setState(() {});
+    });
 
-    final iconSize = widget.drawNumbers ? 20.0 : 13.0;
-    final anchorOffset = widget.drawNumbers ? 20.0 : 24.0;
+    final iconSize = widget.drawNumbers ? 18.0 : 10.0;
     final legendCon = ref.watch(legendProvider.notifier);
     final amenities = List.of(widget.amenities);
 
@@ -248,7 +254,18 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
         interactiveFlags: ref.watch(microZoomedInProvider) != null
             ? InteractiveFlag.none
             : (InteractiveFlag.drag | InteractiveFlag.pinchZoom),
+        plugins: [ZoomButtonsPlugin()],
       ),
+      nonRotatedLayers: [
+        if (widget.drawZoomButtons)
+          ZoomButtonsOptions(
+            alignment: Alignment.bottomRight,
+            padding: EdgeInsets.symmetric(
+              horizontal: 0.0,
+              vertical: 20.0,
+            ),
+          ),
+      ],
       children: [
         TileLayerWidget(
           options: buildTileLayerOptions(
@@ -271,6 +288,12 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
                     color: Colors.transparent,
                     radius: 10.0,
                   ),
+                for (final objLocation in widget.otherObjects)
+                  CircleMarker(
+                    point: objLocation,
+                    color: Colors.black,
+                    radius: 3.0,
+                  ),
               ],
             ),
           ),
@@ -287,24 +310,36 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
               for (var i = 0; i < amenities.length && i < 9; i++)
                 Marker(
                   point: amenities[i].location,
-                  anchorPos: AnchorPos.exactly(Anchor(anchorOffset, anchorOffset)),
                   builder: (ctx) => Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Icon(
-                        Icons.circle,
-                        size: iconSize,
-                        color: getIconColor(amenities[i], legendCon)
-                            .withOpacity(widget.drawNumbers ? 0.7 : 1.0),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: getIconColor(amenities[i], legendCon)
+                              .withOpacity(widget.drawNumbers ? 0.7 : 1.0),
+                          borderRadius: BorderRadius.circular(iconSize / 2),
+                        ),
+                        width: iconSize,
+                        height: iconSize,
+                      ),
+                      if (!widget.drawNumbers && amenities[i].isIncomplete)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(iconSize / 6),
+                        ),
+                        width: iconSize / 3,
+                        height: iconSize / 3,
                       ),
                       if (widget.drawNumbers)
                         Container(
-                          padding: EdgeInsets.only(left: 6.0, top: 1.0),
+                          padding: EdgeInsets.only(left: 5.0),
                           child: Text(
                             (i + 1).toString(),
                             style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
-                              fontSize: iconSize - 5.0,
+                              fontSize: iconSize - 3.0,
                             ),
                           ),
                         ),

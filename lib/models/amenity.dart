@@ -107,6 +107,7 @@ class OsmChange extends ChangeNotifier implements Comparable {
   bool get canDelete =>
       (element?.isPoint ?? true) && !(element?.isMember ?? false);
   ElementKind get kind => detectKind(getFullTags());
+  bool get isIncomplete => needsMoreInfo(getFullTags());
 
   revert() {
     // Cannot revert a new object
@@ -253,8 +254,7 @@ class OsmChange extends ChangeNotifier implements Comparable {
       'new_lon':
           loc == null ? null : (loc.longitude * kCoordinatePrecision).toInt(),
       'deleted': _deleted ? 1 : 0,
-      // 'snap': snapToBuilding ? 1 : 0,
-      // 'updated': updated.millisecondsSinceEpoch,
+      'updated': updated.millisecondsSinceEpoch,
       'error': error,
     };
   }

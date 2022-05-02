@@ -9,8 +9,10 @@ class CachedTileProvider extends TileProvider {
 
   @override
   ImageProvider getImage(Coords<num> coords, TileLayerOptions options) {
+    final url = getTileUrl(coords, options);
+    // print(url);
     return CachedNetworkImageProvider(
-      getTileUrl(coords, options),
+      url,
       // Maybe replace cacheManager later.
     );
   }

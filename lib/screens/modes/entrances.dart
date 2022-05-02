@@ -15,6 +15,7 @@ import 'package:every_door/screens/editor/entrance.dart';
 import 'package:every_door/screens/editor/map_chooser.dart';
 import 'package:every_door/widgets/map_drag_create.dart';
 import 'package:every_door/widgets/multi_hit.dart';
+import 'package:every_door/widgets/zoom_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -172,23 +173,6 @@ class _EntrancesPaneState extends ConsumerState<EntrancesPane> {
     }
 
     return number;
-
-    // Too much information.
-    final streetWords = (building['addr:street'] ?? '')
-        .split(' ')
-        .where((element) => element.trim().isNotEmpty)
-        .toList();
-    int word = 0;
-    if (streetWords.length > 1) {
-      if (kStreetStatusWords.contains(streetWords.first.toLowerCase()))
-        word += 1;
-    }
-    String street = streetWords.isEmpty
-        ? ''
-        : streetWords[word].substring(0, 1).toLowerCase() + '_';
-
-    final levels = building['building:levels'];
-    return levels == null ? '$street$number' : '$street$number\n$levels';
   }
 
   String makeEntranceLabel(OsmChange entrance) {
@@ -323,7 +307,6 @@ class _EntrancesPaneState extends ConsumerState<EntrancesPane> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (widget.areaStatusPanel != null) widget.areaStatusPanel!,
         Expanded(
           child: FlutterMap(
             mapController: controller,
@@ -337,6 +320,7 @@ class _EntrancesPaneState extends ConsumerState<EntrancesPane> {
               plugins: [
                 MapDragCreatePlugin(),
                 MultiHitMarkerLayerPlugin(),
+                ZoomButtonsPlugin(),
               ],
             ),
             nonRotatedLayers: [
@@ -369,13 +353,17 @@ class _EntrancesPaneState extends ConsumerState<EntrancesPane> {
                     Marker(
                       key: keys[entrance.databaseId],
                       point: entrance.location,
-                      width: 30.0,
-                      height: 30.0,
+                      width: 50.0,
+                      height: 50.0,
                       builder: (BuildContext context) {
                         return Center(
                           child: Container(
-                            decoration: makeLabelDecoration(entrance),
-                            child: SizedBox(width: 20.0, height: 20.0),
+                            padding: EdgeInsets.all(10.0),
+                            color: Colors.transparent,
+                            child: Container(
+                              decoration: makeLabelDecoration(entrance),
+                              child: SizedBox(width: 20.0, height: 20.0),
+                            ),
                           ),
                         );
                       },
@@ -435,6 +423,13 @@ class _EntrancesPaneState extends ConsumerState<EntrancesPane> {
                       }),
                 ],
               ),
+              ZoomButtonsOptions(
+                alignment: Alignment.bottomRight,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10.0,
+                  vertical: 100.0,
+                ),
+              ),
             ],
             children: [
               TileLayerWidget(
@@ -473,6 +468,7 @@ class _EntrancesPaneState extends ConsumerState<EntrancesPane> {
             ],
           ),
         ),
+        if (widget.areaStatusPanel != null) widget.areaStatusPanel!,
       ],
     );
   }

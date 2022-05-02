@@ -1,6 +1,5 @@
 import 'package:every_door/helpers/good_tags.dart';
 import 'package:every_door/providers/legend.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:every_door/constants.dart';
@@ -31,7 +30,7 @@ class PoiListPane extends ConsumerStatefulWidget {
 }
 
 class _PoiListPageState extends ConsumerState<PoiListPane> {
-  List<OsmChange> allPOI = [];
+  List<LatLng> otherPOI = [];
   List<OsmChange> nearestPOI = [];
   final mapController = AmenityMapController();
   bool farFromUser = false;
@@ -69,20 +68,45 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
       return;
 
     final provider = ref.read(osmDataProvider);
-    final editorMode = ref.read(editorModeProvider);
+    final isMicromapping =
+        ref.read(editorModeProvider) == EditorMode.micromapping;
     final filter = ref.read(poiFilterProvider);
     final location = forceLocation ?? ref.read(effectiveLocationProvider)!;
     // Query for amenities around the location.
     final int radius =
         forceRadius ?? (farFromUser ? kFarVisibilityRadius : kVisibilityRadius);
     List<OsmChange> data = await provider.getElements(location, radius);
+
+    // Remove points too far from the user.
+    const distance = DistanceEquirectangular();
+    data = data
+        .where((element) => distance(location, element.location) <= radius)
+        .toList();
+
+    // Keep other mode objects to show.
+    final otherData = data
+        .where((e) {
+          // Only modified objects for now.
+          if (!e.isModified) return false;
+          switch (e.kind) {
+            case ElementKind.amenity:
+              return isMicromapping;
+            case ElementKind.micro:
+              return !isMicromapping;
+            default:
+              return false;
+          }
+        })
+        .map((e) => e.location)
+        .toList();
+
     // Filter for amenities (or not amenities).
     data = data.where((e) {
       switch (e.kind) {
         case ElementKind.amenity:
-          return editorMode == EditorMode.poi;
+          return !isMicromapping;
         case ElementKind.micro:
-          return editorMode == EditorMode.micromapping;
+          return isMicromapping;
         case ElementKind.building:
         case ElementKind.entrance:
           return false;
@@ -94,24 +118,22 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
     if (filter.isNotEmpty) {
       data = data.where((e) => filter.matches(e)).toList();
     }
-    // Remove points too far from the user.
-    const distance = DistanceEquirectangular();
-    data = data
-        .where((element) => distance(location, element.location) <= radius)
-        .toList();
     // Sort by distance.
     data.sort((a, b) => distance(location, a.location)
         .compareTo(distance(location, b.location)));
     // Trim to 10-20 elements.
-    if (data.length > kAmenitiesInList)
-      data = data.sublist(0, kAmenitiesInList);
+    final maxElements = !isMicromapping ? kAmenitiesInList : kMicroStuffInList;
+    if (data.length > maxElements) data = data.sublist(0, maxElements);
+
     // Update the map.
     if (!mounted) return;
     setState(() {
       nearestPOI = data;
+      otherPOI = otherData;
     });
 
-    if (editorMode == EditorMode.micromapping) {
+    // Update the legend.
+    if (isMicromapping) {
       final locale = Localizations.localeOf(context);
       ref.read(legendProvider.notifier).updateLegend(data, locale: locale);
     }
@@ -194,6 +216,7 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
           child: AmenityMap(
             initialLocation: location,
             amenities: nearestPOI,
+            otherObjects: otherPOI,
             controller: mapController,
             onDragEnd: (pos) {
               ref.read(effectiveLocationProvider.notifier).set(pos);
@@ -201,6 +224,9 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
             onTap: micromappingTap,
             colorsFromLegend: isMicromapping,
             drawNumbers: !isMicromapping || isZoomedIn,
+            drawZoomButtons:
+                (isMicromapping && ref.watch(legendProvider).isNotEmpty) ||
+                    (!isMicromapping && farFromUser),
           ),
         ),
         if (widget.areaStatusPanel != null)
@@ -232,6 +258,7 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
         SizedBox(height: 20.0),
         Text(
           getApiStatusLoc(apiStatus, loc),
+          textAlign: TextAlign.center,
           style: TextStyle(fontSize: 20.0),
         ),
       ],
@@ -242,9 +269,10 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
 class LegendPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final legend = ref.watch(legendProvider);
+    final legend = List.of(ref.watch(legendProvider));
     if (legend.isEmpty) return Container();
 
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(10.0),
       constraints: BoxConstraints(minHeight: 150.0),
@@ -257,10 +285,13 @@ class LegendPane extends ConsumerWidget {
               children: [
                 Icon(Icons.circle, color: item.color, size: 20.0),
                 SizedBox(width: 5.0),
-                Expanded(child: Padding(
-                  padding: const EdgeInsets.only(bottom: 5.0),
-                  child: Text(item.label, style: kFieldTextStyle),
-                )),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 5.0),
+                    child: Text(item.isOther ? loc.legendOther : item.label,
+                        style: kFieldTextStyle),
+                  ),
+                ),
               ],
             )
         ],

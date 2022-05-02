@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
 const kAppTitle = 'Every Door';
-const kAppVersion = '0.1.8'; // Also used for presets.db versioning
+const kAppVersion = '0.1.13'; // Also used for presets.db versioning
 
 const kDefaultLocation = <double>[59.42, 24.71];
 const kDatabaseName = 'every_door.db';
 const kBigRadius = 1000; // for downloading, in meters
 const kSmallRadius = 400; // for downloading, in meters
 const kVisibilityRadius = 100; // meters
-const kFarDistance = 300; // when we turn to "far location" mode, meters
+const kFarDistance = 150; // when we turn to "far location" mode, meters
 const kFarVisibilityRadius = 150; // meters in far location mode
 const kGeohashPrecision = 7; // ~76 meters (6 is ~600 which is too much)
 const kCoordinatePrecision = 10000000; // For saving locations to a database
 const kObsoleteData = Duration(days: 3); // for yellow warning
 const kSuperObsoleteData = Duration(days: 14); // for purging
 const kAmenitiesInList = 12;
+const kMicroStuffInList = 15;
 const kTapRadius = 20.0; // flutter pixels
 const kOldAmenityDays = 14;
 const kFieldColor = Colors.lightBlueAccent;

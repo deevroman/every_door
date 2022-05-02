@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:every_door/constants.dart';
 import 'package:every_door/fields/combo.dart';
 import 'package:every_door/fields/helpers/combo_page.dart';
@@ -9,7 +10,7 @@ import 'package:every_door/providers/presets.dart';
 import 'package:every_door/screens/settings/account.dart';
 import 'package:every_door/screens/settings/changes.dart';
 import 'package:every_door/screens/settings/imagery.dart';
-import 'package:every_door/widgets/mode_section.dart';
+import 'package:every_door/screens/settings/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropdown_alert/alert_controller.dart';
 import 'package:flutter_dropdown_alert/model/data_alert.dart';
@@ -80,14 +81,26 @@ class SettingsPage extends ConsumerWidget {
                 trailing: Text(purgeAll ? dataLength : obsoleteDataLength),
                 enabled: osmData.length > 0,
                 onPressed: (_) async {
+                  if (purgeAll) {
+                    final answer = await showOkCancelAlertDialog(
+                      context: context,
+                      title: loc.settingsPurgeDataTitle,
+                      message: loc.settingsPurgeDataMessage,
+                      isDestructiveAction: true,
+                      okLabel: loc.buttonYes,
+                      cancelLabel: loc.buttonNo,
+                    );
+                    if (answer != OkCancelResult.ok) return;
+                  }
+
                   final count =
                       await ref.read(osmDataProvider).purgeData(purgeAll);
                   if (purgeAll) {
-                    AlertController.show('Deleted Data',
-                        'Purged $count elements.', TypeAlert.success);
+                    AlertController.show(loc.settingsPurgedAllTitle,
+                        loc.settingsPurgedMessage(count), TypeAlert.success);
                   } else {
-                    AlertController.show('Obsolete Data',
-                        'Purged $count obsolete elements.', TypeAlert.success);
+                    AlertController.show(loc.settingsPurgedObsoleteTitle,
+                        loc.settingsPurgedMessage(count), TypeAlert.success);
                   }
                 },
               ),
@@ -109,10 +122,10 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           SettingsSection(
-            title: Text('Editor'),
+            title: Text(loc.settingsEditor),
             tiles: [
               SettingsTile.switchTile(
-                title: Text('Prefer "contact:" prefix'),
+                title: Text(loc.settingsPreferContact),
                 onToggle: (value) {
                   ref
                       .read(editorSettingsProvider.notifier)
@@ -121,7 +134,7 @@ class SettingsPage extends ConsumerWidget {
                 initialValue: editorSettings.preferContact,
               ),
               SettingsTile.switchTile(
-                title: Text('Fix Numeric Keyboard'),
+                title: Text(loc.settingsNumericKeyboard),
                 onToggle: (value) {
                   ref
                       .read(editorSettingsProvider.notifier)
@@ -130,7 +143,7 @@ class SettingsPage extends ConsumerWidget {
                 initialValue: editorSettings.fixNumKeyboard,
               ),
               SettingsTile(
-                title: Text('Default Payment Cards'),
+                title: Text(loc.settingsDefaultPayment),
                 value: Text(editorSettings.defaultPayment.join(', ')),
                 trailing: Icon(Icons.navigate_next),
                 onPressed: (context) async {
@@ -171,9 +184,17 @@ class VersionSection extends AbstractSettingsSection {
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
       child: Center(
-        child: Text(
-          'Every Door $kAppVersion',
-          style: TextStyle(color: Colors.grey, fontSize: 12.0),
+        child: GestureDetector(
+          child: Text(
+            'Every Door $kAppVersion',
+            style: TextStyle(color: Colors.grey, fontSize: 12.0),
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LogDisplayPage()),
+            );
+          },
         ),
       ),
     );

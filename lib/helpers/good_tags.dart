@@ -1,8 +1,8 @@
 const kMainKeys = <String>[
   'amenity', 'shop', 'craft', 'tourism', 'historic',
   'highway', 'railway',
-  'emergency', 'office', 'healthcare', 'leisure', 'natural',
-  'waterway', 'man_made', 'power', 'aeroway', 'aerialway',
+  'office', 'healthcare', 'leisure', 'natural',
+  'emergency', 'waterway', 'man_made', 'power', 'aeroway', 'aerialway',
   'landuse', 'military', 'barrier', 'building', 'entrance', 'boundary',
   'advertising', 'playground', 'traffic_calming',
 ];
@@ -29,6 +29,7 @@ enum ElementKind {
 
 String? getMainKey(Map<String, String> tags, [bool alsoDisused = true]) {
   for (final k in kMainKeys) {
+    if (tags[k] == 'no') continue;
     if (tags.containsKey(k)) return k;
     if (alsoDisused && tags.containsKey(kDisused + k)) return kDisused + k;
     if (alsoDisused && tags.containsKey(kDeleted + k)) return kDeleted + k;
@@ -192,55 +193,9 @@ bool isMicroTags(Map<String, String> tags) {
   const kAllGoodKeys = <String>{
     'amenity', 'tourism', 'emergency', 'man_made', 'historic',
     'playground', 'advertising', 'power', 'traffic_calming',
+    'barrier', 'highway', 'railway', 'natural', 'leisure',
   };
   if (kAllGoodKeys.contains(k)) return true;
-
-  final v = tags[key];
-  if (k == 'highway') {
-    const goodHighway = {
-      'street_lamp',
-      'speed_camera',
-      'emergency_access_point',
-      'bus_stop',
-      'platform',
-      'traffic_mirror',
-      'elevator',
-      'speed_display'
-    };
-    return goodHighway.contains(v);
-  } else if (k == 'leisure') {
-    const goodLeisure = {
-      'picnic_table',
-      'playground',
-      'fitness_station',
-      'firepit',
-      'fishing',
-      'outdoor_seating',
-      'dog_park',
-      'bathing_place',
-      'table',
-      'village_swing'
-    };
-    return goodLeisure.contains(v);
-  } else if (k == 'natural') {
-    const goodNatural = {
-      'tree',
-      'rock',
-      'shrub',
-      'spring',
-      'cave_entrance',
-      'stone',
-      'birds_nest',
-      'termite_mound',
-      'tree_stump',
-      'bush',
-      'razed:tree',
-      'geyser',
-      'plant',
-      'anthill'
-    };
-    return goodNatural.contains(v);
-  }
   return false;
 }
 
@@ -265,6 +220,8 @@ bool isGoodTags(Map<String, String> tags) {
     'advertising',
     'playground',
     'entrance',
+    'barrier',
+    'traffic_calming',
   };
   if (kAllGoodKeys.contains(k)) return true;
 
@@ -299,7 +256,7 @@ bool isGoodTags(Map<String, String> tags) {
     const kGoodHighway = <String>{
       'crossing', 'bus_stop', 'street_lamp', 'platform',
       'stop', 'give_way', 'milestone', 'speed_camera',
-      'passing_place',
+      'passing_place', 'traffic_signals',
     };
     return kGoodHighway.contains(v);
   } else if (k == 'railway') {
@@ -353,5 +310,34 @@ bool isSnapTargetTags(Map<String, String> tags, [SnapTo? kind]) {
       .contains(tags['railway']);
   if (tags.containsKey('building') && (kind == null || kind == SnapTo.building))
     return tags['building'] != 'roof';
+  return false;
+}
+
+bool needsMoreInfo(Map<String, String> tags) {
+  if (tags['amenity'] == 'bench') return tags['backrest'] == null;
+  if (tags['amenity'] == 'bicycle_parking')
+    return tags['bicycle_parking'] == null || tags['capacity'] == null;
+  if (tags['amenity'] == 'post_box')
+    return tags['collection_times'] == null || tags['ref'] == null;
+  if (tags['amenity'] == 'recycling')
+    return tags['recycling_type'] == null || !tags.keys.any((k) => k.startsWith('recycling:'));
+  if (tags['amenity'] == 'waste_disposal') return tags['waste'] == null;
+
+  if (tags['emergency'] == 'fire_hydrant') return tags['fire_hydrant:type'] == null;
+
+  if (tags['highway'] == 'crossing') return tags['crossing'] == null;
+  if (tags['highway'] == 'street_lamp') return tags['support'] == null;
+  if (tags['highway'] == 'bus_stop')
+    return tags['bench'] == null || tags['shelter'] == null;
+
+  if (tags['man_made'] == 'manhole') return tags['manhole'] == null;
+  if (tags['man_made'] == 'street_cabinet') return tags['street_cabinet'] == null;
+  if (tags['man_made'] == 'utility_pole') return tags['utility'] == null;
+
+  if (tags['natural'] == 'tree')
+    return tags['leaf_type'] == null || tags['leaf_cycle'] == null;
+
+  if (tags['power'] == 'pole') return tags['material'] == null;
+  if (tags['power'] == 'tower') return tags['ref'] == null;
   return false;
 }

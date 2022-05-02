@@ -14,9 +14,10 @@ import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TypeChooserPage extends ConsumerStatefulWidget {
-  final LatLng? creatingLocation;
+  final LatLng? location;
+  final bool launchEditor;
 
-  const TypeChooserPage({this.creatingLocation});
+  const TypeChooserPage({this.location, this.launchEditor = true});
 
   @override
   _TypeChooserPageState createState() => _TypeChooserPageState();
@@ -94,8 +95,10 @@ class _TypeChooserPageState extends ConsumerState<TypeChooserPage> {
       final presetsToAdd = <Preset>[];
       presetsToAdd.addAll(ref.read(lastPresetsProvider).getPresets());
       // Add presets from around.
-      if (widget.creatingLocation != null) {
-        presetsToAdd.addAll(await _getPresetsAround(widget.creatingLocation!));
+      if (widget.location != null) {
+        final presetsAround = await _getPresetsAround(widget.location!);
+        for (final p in presetsAround)
+          if (!presetsToAdd.contains(p)) presetsToAdd.add(p);
       }
 
       // Keep 2 or 4 (or 0) added presets.
@@ -114,7 +117,7 @@ class _TypeChooserPageState extends ConsumerState<TypeChooserPage> {
 
       final newPresets = await prov.getPresetsAutocomplete(substring,
           locale: locale,
-          location: widget.creatingLocation,
+          location: widget.location,
           includeNSI: editorMode == EditorMode.poi);
 
       // Add a fix me preset for entered string.
@@ -205,12 +208,12 @@ class _TypeChooserPageState extends ConsumerState<TypeChooserPage> {
                 padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
               ),
               onTap: () {
-                if (widget.creatingLocation != null) {
+                if (widget.launchEditor) {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => PoiEditorPage(
-                        location: widget.creatingLocation,
+                        location: widget.location,
                         preset: preset,
                       ),
                     ),

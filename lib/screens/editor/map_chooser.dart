@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:every_door/constants.dart';
+import 'package:every_door/helpers/good_tags.dart';
 import 'package:every_door/models/amenity.dart';
+import 'package:every_door/providers/editor_mode.dart';
 import 'package:every_door/providers/geolocation.dart';
 import 'package:every_door/providers/imagery.dart';
 import 'package:every_door/providers/osm_data.dart';
@@ -60,10 +62,25 @@ class _MapChooserPageState extends ConsumerState<MapChooserPage> {
   updateNearest() async {
     final provider = ref.read(osmDataProvider);
     final filter = ref.read(poiFilterProvider);
+    final editorMode = ref.read(editorModeProvider);
     final location = center;
     // Query for amenities around the location.
     List<OsmChange> data =
         await provider.getElements(location, kVisibilityRadius);
+    // Filter for amenities (or not amenities).
+    data = data.where((e) {
+      switch (e.kind) {
+        case ElementKind.amenity:
+          return editorMode == EditorMode.poi;
+        case ElementKind.micro:
+          return editorMode == EditorMode.micromapping;
+        case ElementKind.building:
+        case ElementKind.entrance:
+          return false;
+        default:
+          return e.isNew;
+      }
+    }).toList();
     // Apply the building filter.
     if (filter.isNotEmpty) {
       data = data.where((e) => filter.matches(e)).toList();
@@ -116,6 +133,11 @@ class _MapChooserPageState extends ConsumerState<MapChooserPage> {
                     color: Colors.blue.withOpacity(0.4),
                     radius: 10.0,
                   ),
+                  CircleMarker(
+                    point: center,
+                    radius: 2.0,
+                    color: Colors.yellowAccent,
+                  ),
                 ],
               ),
             ),
@@ -125,7 +147,8 @@ class _MapChooserPageState extends ConsumerState<MapChooserPage> {
                 Marker(
                   point: center,
                   anchorPos: AnchorPos.exactly(Anchor(15.0, 5.0)),
-                  builder: (ctx) => Icon(Icons.location_pin),
+                  builder: (ctx) =>
+                      Icon(Icons.location_pin, color: Colors.black),
                 ),
               ],
             ),
@@ -137,11 +160,7 @@ class _MapChooserPageState extends ConsumerState<MapChooserPage> {
                   CircleMarker(
                     point: poi.location,
                     radius: 3.0,
-                    color: poi.isModified
-                        ? Colors.greenAccent
-                        : (poi.element?.isAmenity ?? true
-                            ? Colors.black
-                            : Colors.yellow),
+                    color: !poi.isModified ? Colors.greenAccent : Colors.yellow,
                   ),
               ],
             ),
@@ -155,8 +174,7 @@ class _MapChooserPageState extends ConsumerState<MapChooserPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) =>
-                      TypeChooserPage(creatingLocation: center)),
+                  builder: (context) => TypeChooserPage(location: center)),
             );
           } else {
             Navigator.pop(context, center);

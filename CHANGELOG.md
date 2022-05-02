@@ -1,8 +1,64 @@
 # Every Door App Change Log
 
-## 0.1.9
+## 0.2.0
 
 _Unreleased_
+
+* First public version.
+* Patched `ref`s to be numbers.
+
+## 0.1.13
+
+_Released on 2022-05-01_
+
+* Name supports multiple languages now.
+* Added "Move" label to the map in the amenity editor.
+* White dots in micromapping denote missing major attributes.
+* Fixed micromapping crossings and barriers.
+* Fixed duplicates in the types list.
+* Enlarged hit boxes for building entrances.
+* Added a yellow dot to the map chooser for better visibility over dark background.
+
+## 0.1.12
+
+_Released on 2022-04-30_
+
+* Tap on the editor app bar title to change the amenity type.
+* Fixed error on submitting a value in a single-value combobox.
+* Fixed error catching on async exceptions.
+* Disabled editing floors for POI on building contours.
+* In the location chooser for a new object, filtering objects by type.
+* Added `barrier=*` to micromapping types.
+* Once more reduced "big map" distance in the amenity mode.
+* Map shows modified objects from other modes, just in case.
+* Zoom buttons for the map.
+
+## 0.1.11
+
+_Released on 2022-04-27_
+
+* German translation complete, thanks to @mfbehrens99.
+* Fixed an error when upgrading database.
+* Made labels column in the floor editor a bit wider.
+* Forgot some translations.
+
+## 0.1.10
+
+_Released on 2022-04-27_
+
+* System logs can be sent to the author (tap the version in settings).
+* When the database is broken, the app recreates it.
+* More roof shapes.
+* Option to store flat number for an entrance in `addr:unit`.
+* Translated everything.
+
+## 0.1.9
+
+_Released on 2022-04-26_
+
+* Better sorting in the micromapping legend, and a label for "Other".
+* Exception catching on loading changes.
+* More translated strings.
 
 ## 0.1.8
 
@@ -147,4 +203,4 @@ _Released on 2022-03-30_
 
 _Released on 2022-03-25_
 
-* First public version.
+* First internal testing version.

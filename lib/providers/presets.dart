@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:every_door/models/preset.dart';
+import 'package:logging/logging.dart';
 import 'dart:io' as io;
 import 'dart:ui' show Locale;
 import 'dart:convert' show JsonDecoder, jsonDecode;
@@ -27,6 +28,7 @@ final presetProvider = Provider((_) => PresetProvider());
 
 class PresetProvider {
   static const kDbVersion = "dbVersion";
+  static final _logger = Logger('PresetProvider');
 
   Database? _db;
   late final LocationMatcher locationMatcher;
@@ -263,7 +265,7 @@ class PresetProvider {
       presets[name] = Preset.fromJson(row);
     }
     if (presets.length != ids.length) {
-      print(
+      _logger.warning(
           'getPresetsById fail: for ${ids.length} ids got ${results.length} results.');
     }
     return ids.map((e) => presets[e]).whereType<Preset>().toList();
@@ -422,6 +424,7 @@ class PresetProvider {
   }
 
   Future<List<Map<String, dynamic>>> imageryQuery(String geohash) async {
+    if (!ready) await _waitUntilReady();
     const sql = """
     with im_ids as (
       select imagery_id from imagery_lookup
@@ -438,6 +441,7 @@ class PresetProvider {
   }
 
   Future<Map<String, dynamic>?> singleImageryQuery(String id) async {
+    if (!ready) await _waitUntilReady();
     const sql = "select * from imagery where id = ?";
     return (await _db!.rawQuery(sql, [id])).firstOrNull;
   }

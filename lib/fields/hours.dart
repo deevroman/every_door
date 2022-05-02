@@ -72,6 +72,8 @@ class _HoursInputFieldState extends ConsumerState<HoursInputField> {
   }
 
   findMostCommonInterval() async {
+    const kMinMatchingIntervals = 3;
+
     final data = ref.read(osmDataProvider);
     List<String> hoursList =
         await data.getOpeningHoursAround(widget.element.location, limit: 20);
@@ -79,8 +81,10 @@ class _HoursInputFieldState extends ConsumerState<HoursInputField> {
     // Consider those with 3+ occurrences.
     final counter = <String, int>{};
     for (final h in hoursList) counter[h] = (counter[h] ?? 0) + 1;
-    hoursList =
-        counter.entries.where((e) => e.value >= 3).map((e) => e.key).toList();
+    hoursList = counter.entries
+        .where((e) => e.value >= kMinMatchingIntervals)
+        .map((e) => e.key)
+        .toList();
 
     // Parse opening hours and remove those with 24/7 entries.
     final parsed = hoursList
@@ -242,7 +246,7 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
             onPressed: () {
               Navigator.pop(context, '-');
             },
-            icon: Icon(Icons.close),
+            icon: Icon(Icons.delete),
           ),
         ],
       ),
@@ -273,8 +277,6 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
             hours.updateHours(value);
           });
         },
-        validator: (value) =>
-            value == null || HoursData.isValid(value) ? null : 'Wrong format',
       ),
     );
   }
@@ -348,7 +350,7 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
             child: Text(loc.fieldHoursAddFragment),
           ),
         SwitchListTile(
-          title: Text('Closed on public holidays'),
+          title: Text(loc.fieldHoursClosedPH),
           value: hours.phOff,
           onChanged: (value) {
             setState(() {
