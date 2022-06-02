@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Colors, TextStyle;
 
 const kAppTitle = 'Every Door';
-const kAppVersion = '0.1.13'; // Also used for presets.db versioning
+const kAppVersion = '0.4.0'; // Also used for presets.db versioning
 
 const kDefaultLocation = <double>[59.42, 24.71];
 const kDatabaseName = 'every_door.db';
@@ -11,22 +11,26 @@ const kVisibilityRadius = 100; // meters
 const kFarDistance = 150; // when we turn to "far location" mode, meters
 const kFarVisibilityRadius = 150; // meters in far location mode
 const kGeohashPrecision = 7; // ~76 meters (6 is ~600 which is too much)
+const kRoadNameGeohashPrecision = 7;
 const kCoordinatePrecision = 10000000; // For saving locations to a database
 const kObsoleteData = Duration(days: 3); // for yellow warning
 const kSuperObsoleteData = Duration(days: 14); // for purging
-const kAmenitiesInList = 12;
-const kMicroStuffInList = 15;
+const kAmenitiesInList = 12; // for shops & amenities mode
+const kMicroStuffInList = 24; // same, but for micromapping mode
 const kTapRadius = 20.0; // flutter pixels
-const kOldAmenityDays = 14;
+const kOldAmenityDays = 14; // check_date expiration rate
 const kFieldColor = Colors.lightBlueAccent;
-const kFieldFontSize = 18.0;
+const kFieldFontSize = 18.0; // font size in fields
 const kFieldTextStyle = TextStyle(fontSize: kFieldFontSize);
-const kMaxShownPresets = 10;
-const kMaxNSIPresets = 3;
-const kFollowLinks = false;
-const kUploadOnClose = false;
-const kMicromappingTapZoom = 19.0;
-const kManualOption = '✍️';
+const kMaxShownPresets = 14; // total number of presets for autocomplete
+const kMaxNSIPresets = 3; // how many of them can come from NSI
+const kFollowLinks = true; // whether to open links and phones on tap
+const kUploadOnClose = false; // whether to trigger data upload on app deactivation
+const kShowContactSetting = false; // whether to show the "contact:" setting
+const kSlowDownGPS = false; // skip location changes that are too small to register
+const kMicromappingTapZoom = 19.0; // how much to zoom in when tapping a bunch of elements in micromapping
+const kRotationThreshold = 15.0; // degrees, for snapping to zero rotation
+const kManualOption = '✍️'; // Emoji icon for entering values by hand
 
 // Should be exactly 8 lines in both lists.
 const kDefaultPresets = [

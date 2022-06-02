@@ -6,6 +6,7 @@ import 'package:every_door/models/amenity.dart';
 import 'package:every_door/models/field.dart';
 import 'package:every_door/models/preset.dart';
 import 'package:every_door/providers/changes.dart';
+import 'package:every_door/providers/geolocation.dart';
 import 'package:every_door/providers/last_presets.dart';
 import 'package:every_door/providers/need_update.dart';
 import 'package:every_door/providers/presets.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:logging/logging.dart';
 
 class PoiEditorPage extends ConsumerStatefulWidget {
   final OsmChange? amenity;
@@ -31,6 +33,7 @@ class PoiEditorPage extends ConsumerStatefulWidget {
 }
 
 class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
+  static final _logger = Logger('PoiEditorPage');
   late OsmChange amenity;
   Preset? preset;
   List<PresetField> fields = []; // actual fields
@@ -81,7 +84,8 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
         needRefresh = true;
       }
     }
-    // print('Detected ($detect) preset $preset');
+
+    _logger.fine('Detected ($detect) preset $preset');
     if (preset!.fields.isEmpty) {
       preset = await presets.getFields(preset!, locale: locale);
       if (isAmenityTags(amenity.getFullTags())) {
@@ -91,6 +95,19 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
         // Remove the field for level if the object is a building.
         if (amenity['building'] != null) {
           stdFields.removeWhere((e) => e.key == 'level');
+        }
+        // Move some fields to stdFields if present.
+        if (!needsStdFields) {
+          for (final f in preset!.fields) {
+            if (PresetProvider.kStandardPoiFields.contains(f.key))
+              stdFields.add(f);
+          }
+        }
+        // Add opening_hours to moreFields if it's not anywhere.
+        if (!preset!.fields.any((field) => field.key == 'opening_hours') &&
+            !preset!.moreFields.any((field) => field.key == 'opening_hours')) {
+          final hoursField = await presets.getField('opening_hours', locale);
+          preset!.moreFields.insert(0, hoursField);
         }
       } else {
         stdFields = [];
@@ -148,6 +165,9 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
       moreFields = [];
       stdFields = [];
     });
+    // if disused, remove disused: prefix before removing tags
+    // otherwise we may end up with disused:<old_mainKey>=* + <new_mainKey>=*
+    if (amenity.isDisused) amenity.toggleDisused();
     oldPreset?.doRemoveTags(amenity);
     preset = newPreset;
     preset!.doAddTags(amenity);
@@ -178,14 +198,32 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
     ref.read(needMapUpdateProvider).trigger();
   }
 
+  confirmDisused(BuildContext context) async {
+    String oldMainKey = getMainKey(amenity.element?.tags ?? {}) ?? '';
+    if (amenity.isDisused && oldMainKey.startsWith(kDisused)) {
+      final loc = AppLocalizations.of(context)!;
+      final result = await showOkCancelAlertDialog(
+        context: context,
+        title: loc.editorRestoreTitle,
+        message: loc.editorRestoreMessage(amenity.typeAndName),
+        okLabel: loc.buttonYes,
+        cancelLabel: loc.buttonNo,
+      );
+      if (result == OkCancelResult.ok) amenity.toggleDisused();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final preset = this.preset;
-    final bool canSave = widget.amenity == null || amenity != widget.amenity;
+    final bool modified = widget.amenity == null || amenity != widget.amenity;
+    final bool needsCheck =
+        amenity.isOld && needsCheckDate(amenity.getFullTags());
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final loc = AppLocalizations.of(context)!;
     return WillPopScope(
       onWillPop: () async {
-        if (!canSave)
+        if (!modified)
           return true;
         else {
           final result = await showOkCancelAlertDialog(
@@ -205,7 +243,7 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.table_rows),
+              icon: Icon(Icons.code),
               onPressed: () async {
                 await Navigator.push(
                     context,
@@ -222,86 +260,81 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
             : Column(
                 children: [
                   Expanded(
-                    child: ListView(
-                      children: [
-                        if (amenity.canDelete) buildMap(context),
-                        if (!amenity.canDelete) SizedBox(height: 10.0),
-                        if (stdFields.isNotEmpty) ...[
-                          buildFields(stdFields, 50),
-                          SizedBox(height: 10.0),
-                          Divider(),
-                          SizedBox(height: 10.0),
-                        ],
-                        if (fields.isNotEmpty) ...[
-                          buildFields(fields),
+                    child: SafeArea(
+                      top: false,
+                      bottom: false,
+                      child: ListView(
+                        children: [
+                          if (amenity.canDelete) buildMap(context),
+                          if (!amenity.canDelete) SizedBox(height: 10.0),
+                          if (stdFields.isNotEmpty) ...[
+                            buildFields(stdFields, 50),
+                          ],
+                          if (fields.isNotEmpty) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10.0),
+                              child: Divider(),
+                            ),
+                            buildFields(fields),
+                          ],
                           SizedBox(height: 20.0),
+                          buildTopButtons(context),
+                          SizedBox(height: 10.0),
+                          if (moreFields.isNotEmpty) ...[
+                            ExpansionTile(
+                              title: Text(loc.editorMoreFields),
+                              initiallyExpanded: false,
+                              children: [
+                                buildFields(moreFields),
+                              ],
+                            ),
+                            SizedBox(height: 30.0),
+                          ],
                         ],
-                        buildTopButtons(context),
-                        SizedBox(height: 10.0),
-                        if (moreFields.isNotEmpty) ...[
-                          ExpansionTile(
-                            title: Text(loc.editorMoreFields),
-                            initiallyExpanded: false,
-                            children: [
-                              buildFields(moreFields),
-                            ],
-                          ),
-                          SizedBox(height: 30.0),
-                        ],
-                      ],
+                      ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          // width: double.infinity,
-                          height: 50.0,
+                  Container(
+                    // padding: EdgeInsets.only(bottom: bottomPadding),
+                    color: modified ? Colors.green : Colors.white,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
                           child: MaterialButton(
                             color: Colors.green,
                             textColor: Colors.white,
                             disabledColor: Colors.white,
                             disabledTextColor: Colors.grey,
-                            child: Text(
-                              loc.editorSave,
-                              style: TextStyle(fontSize: 20.0),
+                            child: Padding(
+                              child: Text(
+                                loc.editorSave,
+                                style: TextStyle(fontSize: 20.0),
+                              ),
+                              padding: EdgeInsets.only(
+                                  top: 13.0, bottom: 13.0 + bottomPadding),
                             ),
-                            onPressed: !canSave
+                            onPressed: !modified
                                 ? null
                                 : () async {
-                                    String oldMainKey = getMainKey(
-                                            amenity.element?.tags ?? {}) ??
-                                        '';
-                                    if (amenity.isDisused &&
-                                        oldMainKey.startsWith(kDisused)) {
-                                      final result =
-                                          await showOkCancelAlertDialog(
-                                        context: context,
-                                        title: loc.editorRestoreTitle,
-                                        message: loc.editorRestoreMessage(
-                                            amenity.typeAndName),
-                                        okLabel: loc.buttonYes,
-                                        cancelLabel: loc.buttonNo,
-                                      );
-                                      if (result == OkCancelResult.ok)
-                                        amenity.toggleDisused();
-                                    }
+                                    await confirmDisused(context);
                                     saveAndClose();
                                   },
                           ),
                         ),
-                      ),
-                      if (!canSave && amenity.isOld && needsCheckDate(amenity.getFullTags()))
-                        Container(
-                          color: Colors.green,
-                          child: IconButton(
-                            icon: Icon(Icons.check),
-                            color: Colors.white,
-                            iconSize: 30.0,
-                            onPressed: saveAndClose,
+                        if (!modified && needsCheck)
+                          Container(
+                            color: Colors.green,
+                            child: IconButton(
+                              icon: Icon(Icons.check),
+                              color: Colors.white,
+                              iconSize: 30.0,
+                              onPressed: saveAndClose,
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -380,6 +413,7 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
                 center: amenity.location,
                 zoom: 17,
                 interactiveFlags: 0,
+                rotation: ref.watch(rotationProvider),
                 allowPanningOnScrollingParent: false,
                 onTap: (pos, center) async {
                   final newLocation = await Navigator.push(
@@ -402,6 +436,9 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
                     options: MarkerLayerOptions(markers: [
                   Marker(
                     point: amenity.location,
+                    rotate: true,
+                    rotateOrigin: Offset(12.0, -5.0),
+                    rotateAlignment: Alignment.bottomLeft,
                     anchorPos: AnchorPos.exactly(Anchor(138.0, 5.0)),
                     width: 150.0,
                     height: 30.0,

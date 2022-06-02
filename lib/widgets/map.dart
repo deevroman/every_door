@@ -4,10 +4,14 @@ import 'dart:math' show min, max, Point;
 import 'package:every_door/constants.dart';
 import 'package:every_door/helpers/closest_points.dart';
 import 'package:every_door/models/amenity.dart';
+import 'package:every_door/providers/editor_settings.dart';
 import 'package:every_door/providers/geolocation.dart';
 import 'package:every_door/providers/imagery.dart';
 import 'package:every_door/providers/editor_mode.dart';
 import 'package:every_door/providers/legend.dart';
+import 'package:every_door/providers/poi_filter.dart';
+import 'package:every_door/screens/settings.dart';
+import 'package:every_door/widgets/track_button.dart';
 import 'package:every_door/widgets/zoom_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -38,6 +42,7 @@ class AmenityMap extends ConsumerStatefulWidget {
   final void Function(LatLng)? onDragEnd;
   final void Function(LatLng)? onTrack;
   final void Function(LatLngBounds)? onTap;
+  final VoidCallback? onFilterTap;
   final AmenityMapController? controller;
   final bool colorsFromLegend;
   final bool drawNumbers;
@@ -49,6 +54,7 @@ class AmenityMap extends ConsumerStatefulWidget {
     this.onDragEnd,
     this.onTrack,
     this.onTap,
+    this.onFilterTap,
     this.amenities = const [],
     this.otherObjects = const [],
     this.controller,
@@ -63,6 +69,7 @@ class AmenityMap extends ConsumerStatefulWidget {
 
 class _AmenityMapState extends ConsumerState<AmenityMap> {
   static const kMapZoom = 17.0;
+  static const kMicroZoom = 18.0;
 
   late final MapController mapController;
   late final StreamSubscription<MapEvent> mapSub;
@@ -111,6 +118,18 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
       if (widget.onTap != null) {
         widget.onTap!(
             _getBoundsForRadius(event.tapPosition, event.zoom, kTapRadius));
+      }
+    } else if (event is MapEventRotateEnd) {
+      if (event.source != MapEventSource.mapController) {
+        double rotation = mapController.rotation;
+        while (rotation > 200) rotation -= 360;
+        while (rotation < -200) rotation += 360;
+        if (rotation.abs() < kRotationThreshold) {
+          ref.read(rotationProvider.state).state = 0.0;
+          mapController.rotate(0.0);
+        } else {
+          ref.read(rotationProvider.state).state = rotation;
+        }
       }
     }
   }
@@ -225,6 +244,13 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
       }
     });
 
+    // Rotate the map according to the global rotation value.
+    ref.listen(rotationProvider, (_, double newValue) {
+      if ((newValue - mapController.rotation).abs() >= 1.0) {
+        mapController.rotate(newValue);
+      }
+    });
+
     // For micromapping, zoom in and out.
     ref.listen<LatLngBounds?>(microZoomedInProvider,
         (_, LatLngBounds? newState) {
@@ -235,11 +261,20 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
       mapController.move(newState?.center ?? mapController.center, targetZoom);
     });
 
+    // When switching to micromapping, increase zoom.
+    ref.listen(editorModeProvider, (_, next) {
+      if (next == EditorMode.micromapping) {
+        if (mapController.zoom < kMicroZoom)
+          mapController.move(mapController.center, kMicroZoom);
+      }
+    });
+
     // Update colors when the legend is ready.
     ref.listen(legendProvider, (_, next) {
       setState(() {});
     });
 
+    final leftHand = ref.watch(editorSettingsProvider).leftHand;
     final iconSize = widget.drawNumbers ? 18.0 : 10.0;
     final legendCon = ref.watch(legendProvider.notifier);
     final amenities = List.of(widget.amenities);
@@ -248,18 +283,67 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
       mapController: mapController,
       options: MapOptions(
         center: widget.initialLocation, // This does not work :(
+        rotation: ref.watch(rotationProvider),
+        rotationThreshold: kRotationThreshold,
         zoom: kMapZoom,
         minZoom: 15.0,
         maxZoom: 20.0,
         interactiveFlags: ref.watch(microZoomedInProvider) != null
             ? InteractiveFlag.none
-            : (InteractiveFlag.drag | InteractiveFlag.pinchZoom),
-        plugins: [ZoomButtonsPlugin()],
+            : (InteractiveFlag.drag |
+                InteractiveFlag.pinchZoom |
+                InteractiveFlag.rotate),
+        plugins: [
+          ZoomButtonsPlugin(),
+          OverlayButtonPlugin(),
+        ],
       ),
       nonRotatedLayers: [
+        // Settings button
+        OverlayButtonOptions(
+          alignment: leftHand ? Alignment.topRight : Alignment.topLeft,
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.0,
+            vertical: 10.0,
+          ),
+          icon: Icons.menu,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SettingsPage()),
+            );
+          },
+        ),
+        // Filter button
+        if (widget.onFilterTap != null)
+          OverlayButtonOptions(
+            alignment: leftHand ? Alignment.topLeft : Alignment.topRight,
+            padding: EdgeInsets.symmetric(
+              horizontal: 0.0,
+              vertical: 10.0,
+            ),
+            icon: ref.watch(poiFilterProvider).isNotEmpty
+                ? Icons.filter_alt
+                : Icons.filter_alt_outlined,
+            onPressed: widget.onFilterTap!,
+          ),
+        // Tracking button
+        OverlayButtonOptions(
+          alignment: leftHand ? Alignment.topLeft : Alignment.topRight,
+          padding: EdgeInsets.symmetric(
+            // horizontal: widget.onFilterTap == null ? 0.0 : 50.0,
+            horizontal: 0.0,
+            vertical: widget.onFilterTap == null ? 10.0 : 60.0,
+          ),
+          enabled: !ref.watch(trackingProvider),
+          icon: Icons.my_location,
+          onPressed: () {
+            ref.read(trackingProvider.state).state = true;
+          },
+        ),
         if (widget.drawZoomButtons)
           ZoomButtonsOptions(
-            alignment: Alignment.bottomRight,
+            alignment: leftHand ? Alignment.bottomLeft : Alignment.bottomRight,
             padding: EdgeInsets.symmetric(
               horizontal: 0.0,
               vertical: 20.0,
@@ -291,8 +375,8 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
                 for (final objLocation in widget.otherObjects)
                   CircleMarker(
                     point: objLocation,
-                    color: Colors.black,
-                    radius: 3.0,
+                    color: Colors.black.withOpacity(0.4),
+                    radius: 2.0,
                   ),
               ],
             ),
@@ -302,14 +386,18 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
             markers: [
               if (!ref.watch(trackingProvider))
                 Marker(
+                  rotate: true,
+                  rotateOrigin: Offset(0.0, -5.0),
+                  rotateAlignment: Alignment.bottomCenter,
                   point:
                       mapCenter, // mapController.center throws late init exception
                   anchorPos: AnchorPos.exactly(Anchor(15.0, 5.0)),
                   builder: (ctx) => Icon(Icons.location_pin),
                 ),
-              for (var i = 0; i < amenities.length && i < 9; i++)
+              for (var i = amenities.length - 1; i >= 0; i--)
                 Marker(
                   point: amenities[i].location,
+                  rotate: true,
                   builder: (ctx) => Stack(
                     alignment: Alignment.center,
                     children: [
@@ -323,17 +411,17 @@ class _AmenityMapState extends ConsumerState<AmenityMap> {
                         height: iconSize,
                       ),
                       if (!widget.drawNumbers && amenities[i].isIncomplete)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(iconSize / 6),
-                        ),
-                        width: iconSize / 3,
-                        height: iconSize / 3,
-                      ),
-                      if (widget.drawNumbers)
                         Container(
-                          padding: EdgeInsets.only(left: 5.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(iconSize / 6),
+                          ),
+                          width: iconSize / 3,
+                          height: iconSize / 3,
+                        ),
+                      if (widget.drawNumbers && i < 9)
+                        Container(
+                          padding: EdgeInsets.only(left: 1.0),
                           child: Text(
                             (i + 1).toString(),
                             style: TextStyle(

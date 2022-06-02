@@ -3,6 +3,7 @@ import 'package:every_door/fields/combo.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class ComboChooserPage extends StatefulWidget {
   final ComboPresetField field;
@@ -18,11 +19,17 @@ class ComboChooserPage extends StatefulWidget {
 class _ComboChooserPageState extends State<ComboChooserPage> {
   String filter = '';
   late List<String> values;
+  late final List<ComboOption> missingOptions;
 
   @override
   void initState() {
     super.initState();
     values = List.of(widget.values);
+    missingOptions = widget.values
+        .where(
+            (value) => !widget.field.options.any((opt) => opt.value == value))
+        .map((e) => ComboOption(e))
+        .toList();
   }
 
   @override
@@ -76,14 +83,20 @@ class _ComboChooserPageState extends State<ComboChooserPage> {
     );
   }
 
+  String _normalize(String s) {
+    var combining = RegExp(r"[\u0300-\u036F]");
+    return unorm.nfkd(s.toLowerCase().trim()).replaceAll(combining, '');
+  }
+
   Widget buildChooser(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    var options = List.of(widget.field.options);
-    // options = options.where((opt) => !widget.hideValues.contains(opt.value)).toList();
+    var options = missingOptions + List.of(widget.field.options);
     if (filter.isNotEmpty) {
       // Prune options
-      options =
-          options.where((element) => element.value.contains(filter)).toList();
+      final nFilter = _normalize(filter);
+      options = options
+          .where((element) => _normalize(element.value).contains(nFilter))
+          .toList();
       if (widget.field.customValues) {
         // Add this new value as an option
         options.insert(0, ComboOption(filter));

@@ -279,15 +279,19 @@ class PresetProvider {
     final loc = field['loc_options'] != null
         ? jsonDecode(field['loc_options'])
         : <String, String>{};
-    List<String> options;
+    final List<String> options = [];
     if (field['options'] != null) {
-      options = (jsonDecode(field['options']) as List).cast<String>();
-    } else {
-      // Get options from taginfo
-      final results = await _db!
-          .query('combos', where: 'key = ?', whereArgs: [field['key']]);
-      if (results.isEmpty) return const []; // alas
-      options = (results.first['options'] as String).split(';');
+      options.addAll((jsonDecode(field['options']) as List).cast<String>());
+    }
+
+    // Get options from taginfo
+    final results =
+        await _db!.query('combos', where: 'key = ?', whereArgs: [field['key']]);
+    if (results.isNotEmpty) {
+      final existing = Set.of(options);
+      options.addAll((results.first['options'] as String)
+          .split(';')
+          .where((v) => !existing.contains(v)));
     }
     return options.map((e) => ComboOption(e, loc[e])).toList();
   }
@@ -387,24 +391,25 @@ class PresetProvider {
     return fields;
   }
 
+  static const kStandardPoiFields = [
+    'name',
+    'address',
+    'level',
+    'opening_hours',
+    'wheelchair',
+    'wifi',
+    'payment',
+    'phone',
+    'website',
+    'email',
+    'operator',
+    'addr_door',
+    'description',
+  ];
+
   Future<List<PresetField>> getStandardFields(Locale locale, bool isPOI) async {
-    final List<String> stdFields = isPOI
-        ? [
-            'name',
-            'address',
-            'level',
-            'opening_hours',
-            'wheelchair',
-            'wifi',
-            'payment',
-            'phone',
-            'website',
-            'email',
-            'operator',
-            'addr_door',
-            'description',
-          ]
-        : ['address', 'level'];
+    final List<String> stdFields =
+        isPOI ? kStandardPoiFields : ['address', 'level'];
     final fields = await _getFields(stdFields, locale);
     fields['address'] = AddressField(
         label: await _getFieldLabel('address', locale) ?? 'Address');
@@ -427,15 +432,19 @@ class PresetProvider {
     if (!ready) await _waitUntilReady();
     const sql = """
     with im_ids as (
-      select imagery_id from imagery_lookup
+      select imagery_id, (
+        select count(*) from imagery_lookup ll
+        where ll.imagery_id = l.imagery_id
+      ) as imagery_size
+      from imagery_lookup l
       where geohash = ?
       union all
-      select imagery_id from imagery
+      select imagery_id, 10000 as imagery_size from imagery
       where is_default = 1 or is_world = 1
     )
     select * from imagery
     inner join im_ids on im_ids.imagery_id = imagery.imagery_id
-    order by is_best desc, is_world, is_default
+    order by is_default, is_world, is_best desc, imagery_size, imagery_id
     """;
     return await _db!.rawQuery(sql, [geohash]);
   }

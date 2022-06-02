@@ -1,7 +1,9 @@
 import 'package:every_door/constants.dart';
 import 'package:every_door/models/amenity.dart';
+import 'package:every_door/providers/editor_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:every_door/models/field.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TextPresetField extends PresetField {
   final TextInputType keyboardType;
@@ -28,23 +30,24 @@ class TextPresetField extends PresetField {
   Widget buildWidget(OsmChange element) => TextInputField(this, element);
 }
 
-class TextInputField extends StatefulWidget {
+class TextInputField extends ConsumerStatefulWidget {
   final TextPresetField field;
   final OsmChange element;
 
   const TextInputField(this.field, this.element);
 
   @override
-  State createState() => _TextInputFieldState();
+  ConsumerState createState() => _TextInputFieldState();
 }
 
-class _TextInputFieldState extends State<TextInputField> {
+class _TextInputFieldState extends ConsumerState<TextInputField> {
   late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.element[widget.field.key] ?? '');
+    _controller =
+        TextEditingController(text: widget.element[widget.field.key] ?? '');
   }
 
   @override
@@ -55,18 +58,27 @@ class _TextInputFieldState extends State<TextInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final value = widget.element[widget.field.key];
+    final value = widget.element[widget.field.key] ?? '';
     if (value != _controller.text.trim()) {
       // Hopefully that's not the time when we type a letter in the field.
       // TODO: only update when page is back from inactive?
-      _controller.text = value ?? '';
+      _controller.text = value;
+    }
+
+    // Force replace numeric keyboard with a better option.
+    final editorSettings = ref.watch(editorSettingsProvider);
+    var keyboardType = widget.field.keyboardType;
+    if (keyboardType == TextInputType.number) {
+      keyboardType = editorSettings.fixNumKeyboard
+          ? TextInputType.visiblePassword
+          : TextInputType.numberWithOptions(signed: true);
     }
 
     return Padding(
-      padding: EdgeInsets.only(right: 10.0),
+    padding: EdgeInsets.only(right: 10.0),
       child: TextField(
         controller: _controller,
-        keyboardType: widget.field.keyboardType,
+        keyboardType: keyboardType,
         textCapitalization: widget.field.capitalize
             ? TextCapitalization.sentences
             : TextCapitalization.none,
@@ -77,6 +89,8 @@ class _TextInputFieldState extends State<TextInputField> {
         style: kFieldTextStyle,
         maxLines: widget.field.maxLines ?? 1,
         minLines: 1,
+        maxLength:
+            (widget.element[widget.field.key] ?? '').length > 200 ? 255 : null,
         onChanged: (value) {
           // On every keypress, since the focus can change at any minute.
           setState(() {

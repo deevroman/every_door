@@ -4,6 +4,7 @@ import 'package:every_door/helpers/good_tags.dart';
 import 'package:every_door/helpers/snap_nodes.dart';
 import 'package:every_door/models/amenity.dart';
 import 'package:every_door/models/osm_element.dart';
+import 'package:every_door/models/road_name.dart';
 import 'package:every_door/private.dart';
 import 'package:every_door/providers/api_status.dart';
 import 'package:every_door/providers/changes.dart';
@@ -37,7 +38,8 @@ class OsmApiHelper {
 
   OsmApiHelper(this._ref);
 
-  Future<List<OsmElement>> map(LatLngBounds bounds) async {
+  Future<List<OsmElement>> map(LatLngBounds bounds,
+      {Set<RoadNameRecord>? roadNames}) async {
     final url = Uri.https(kOsmEndpoint, '/api/0.6/map', {
       'bbox': '${bounds.west},${bounds.south},${bounds.east},${bounds.north}',
     });
@@ -56,10 +58,13 @@ class OsmApiHelper {
           .toXmlNodes()
           .transform(XmlToOsmConverter())
           .transform(MarkReferenced())
-          .transform(FlattenOsmGeometry(clearMembers: false))
+          .transform(CollectGeometry())
+          .transform(ExtractRoadNames(roadNames))
+          .transform(StripMembers(clearMembers: false))
           .transform(FilterAmenities())
           .flatten()
           .toList();
+      // TODO: what to do with road names?
       return elements;
     } finally {
       client.close();
@@ -119,8 +124,7 @@ class OsmApiHelper {
               (event) => kOsmTypes.containsKey(event.localName))
           .toXmlNodes()
           .transform(XmlToOsmConverter())
-          .transform(
-              FlattenOsmGeometry(clearMembers: false, addNodeLocations: true))
+          .transform(CollectGeometry())
           .transform(FilterSnapTargets())
           .flatten()
           .toList();
@@ -186,6 +190,29 @@ class OsmApiHelper {
       if (el.isDeleted) {
         await data.deleteElement(el.oldElement);
       } else {
+        if (el.newElement.nodes != null) {
+          // Update node ids from placeholders
+          for (int i = 0; i < el.newElement.nodes!.length; i++) {
+            final oldNodeId = el.newElement.nodes![i];
+            if (oldNodeId < 0) {
+              bool foundNew = false;
+              for (final nodeEl in elements) {
+                if (nodeEl.oldElement.isPoint &&
+                    nodeEl.oldElement.id.ref == oldNodeId) {
+                  el.newElement.nodes![i] = nodeEl.newElement.id.ref;
+                  _logger.info(
+                      'Replaced placeholder $oldNodeId with ${nodeEl.newElement.id} in ${el.newElement.id}.');
+                  foundNew = true;
+                  break;
+                }
+              }
+              if (!foundNew) {
+                _logger.warning(
+                    'Could not find new node id for placeholder $oldNodeId in ${el.newElement.id}.');
+              }
+            }
+          }
+        }
         await data.updateElement(el.newElement);
       }
     }
@@ -259,8 +286,7 @@ class OsmApiHelper {
           ));
         }
       } else if (change.hardDeleted) {
-        String objRef =
-            '${kOsmElementTypeName[change.id.type]}/${change.id.ref}';
+        String objRef = change.id.fullRef;
         final resp = await http.delete(
           Uri.https(kOsmEndpoint, '/api/0.6/$objRef'),
           headers: headers,
@@ -282,8 +308,7 @@ class OsmApiHelper {
           updates.add(UploadedElement(change.element!));
         }
       } else if (change.isModified) {
-        String objRef =
-            '${kOsmElementTypeName[change.id.type]}/${change.id.ref}';
+        String objRef = change.id.fullRef;
         final resp = await http.put(
           Uri.https(kOsmEndpoint, '/api/0.6/$objRef'),
           headers: headers,
@@ -345,6 +370,9 @@ class OsmApiHelper {
         e.key.newLocation = snapped.newLocation;
         snapTargets[snapped.newElement.id] = snapped.newElement;
         modifiedWays.add(snapped.newElement.id);
+      } else {
+        if (e.key['fixme'] == null)
+          e.key['fixme'] = 'Please merge me into a nearby ${e.value.name}';
       }
     }
 

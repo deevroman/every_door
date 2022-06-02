@@ -1,5 +1,8 @@
+// DO NOT RE-FORMAT THIS FILE!
+
+/// List of keys to consider when looking for a single main tag, in order of preference.
 const kMainKeys = <String>[
-  'amenity', 'shop', 'craft', 'tourism', 'historic',
+  'amenity', 'shop', 'craft', 'tourism', 'historic', 'club',
   'highway', 'railway',
   'office', 'healthcare', 'leisure', 'natural',
   'emergency', 'waterway', 'man_made', 'power', 'aeroway', 'aerialway',
@@ -11,13 +14,17 @@ final kMainKeysSet = Set.of(kMainKeys);
 const kDisused = 'disused:';
 const kDeleted = 'was:';
 
-const kStreetStatusWords = {
-  'улица', 'переулок', 'проспект', 'набережная', 'проезд', 'бульвар', 'аллея',
-  // TODO: count statistics over all the streets and populate this list.
+/// List of highway=* values that can denote a named road.
+const kHighwayRoadValues = <String>{
+  'service', 'residential', 'pedestrian', 'unclassified', 'tertiary',
+  'secondary', 'primary', 'trunk', 'motorway', 'living_street',
 };
 
+/// Type of object to snap an element to.
+/// E.g. entrances are snapped to `SnapTo.building`.
 enum SnapTo { nothing, building, highway, railway }
 
+/// Kind of element for sorting elements between modes.
 enum ElementKind {
   empty,
   unknown,
@@ -25,18 +32,21 @@ enum ElementKind {
   micro,
   building,
   entrance,
+  address,
 }
 
-String? getMainKey(Map<String, String> tags, [bool alsoDisused = true]) {
+/// Find the single main key for an object. Also considers lifecycle prefixes.
+String? getMainKey(Map<String, String> tags) {
   for (final k in kMainKeys) {
     if (tags[k] == 'no') continue;
     if (tags.containsKey(k)) return k;
-    if (alsoDisused && tags.containsKey(kDisused + k)) return kDisused + k;
-    if (alsoDisused && tags.containsKey(kDeleted + k)) return kDeleted + k;
+    if (tags.containsKey(kDisused + k)) return kDisused + k;
+    if (tags.containsKey(kDeleted + k)) return kDeleted + k;
   }
   return null;
 }
 
+/// Sorts the element by kind, using its tags and helper functions from this file.
 ElementKind detectKind(Map<String, String> tags, [Set<ElementKind>? accepted]) {
   const kMetaTags = {'source', 'note'};
   if ((accepted == null || accepted.contains(ElementKind.amenity)) &&
@@ -48,13 +58,18 @@ ElementKind detectKind(Map<String, String> tags, [Set<ElementKind>? accepted]) {
       tags['building'] == 'entrance') return ElementKind.entrance;
   if ((accepted == null || accepted.contains(ElementKind.building)) &&
       tags['building'] != null) return ElementKind.building;
+  if ((accepted == null || accepted.contains(ElementKind.address)) &&
+      getMainKey(tags) == null && (tags.containsKey('addr:housenumber') ||
+      tags.containsKey('addr:housename'))) return ElementKind.address;
   if (tags.isEmpty || tags.keys.every((element) => kMetaTags.contains(element)))
     return ElementKind.empty;
   return ElementKind.unknown;
 }
 
+/// Removed any prefix for the key, which is before the first `:` character.
 String _clearPrefix(String key) => key.substring(key.indexOf(':') + 1);
 
+/// Checks if the object qualifies for an amenity, mostly based on its main tag.
 bool isAmenityTags(Map<String, String> tags) {
   final key = getMainKey(tags);
   if (key == null) return false;
@@ -129,7 +144,10 @@ bool isAmenityTags(Map<String, String> tags) {
     if (v == 'information') {
       return <String>{'office', 'visitor_centre'}.contains(tags['information']);
     }
-    const wrongTourism = <String>{'attraction', 'viewpoint', 'artwork'};
+    const wrongTourism = <String>{
+      'attraction', 'viewpoint', 'artwork', 'picnic_site', 'camp_pitch',
+      'wilderness_hut', 'cabin'
+    };
     return !wrongTourism.contains(v);
   } else if (k == 'leisure') {
     const goodLeisure = <String>{
@@ -181,7 +199,7 @@ bool isAmenityTags(Map<String, String> tags) {
 }
 
 /// Returns `true` if the object with these tags is to be displayed
-/// on the micromapping map.
+/// on the micromapping map. Mostly the criteria is "not an amenity".
 bool isMicroTags(Map<String, String> tags) {
   if (isAmenityTags(tags)) return false;
 
@@ -199,6 +217,7 @@ bool isMicroTags(Map<String, String> tags) {
   return false;
 }
 
+/// Returns `true` when an object is editable in this app.
 bool isGoodTags(Map<String, String> tags) {
   final key = getMainKey(tags);
   if (key == null) return false;
@@ -213,14 +232,12 @@ bool isGoodTags(Map<String, String> tags) {
     'historic',
     'club',
     'emergency',
-    'man_made',
     'power',
     'aerialway',
     'aeroway',
     'advertising',
     'playground',
     'entrance',
-    'barrier',
     'traffic_calming',
   };
   if (kAllGoodKeys.contains(k)) return true;
@@ -256,7 +273,8 @@ bool isGoodTags(Map<String, String> tags) {
     const kGoodHighway = <String>{
       'crossing', 'bus_stop', 'street_lamp', 'platform',
       'stop', 'give_way', 'milestone', 'speed_camera',
-      'passing_place', 'traffic_signals',
+      'passing_place', 'traffic_signals', 'traffic_mirror',
+      'elevator', 'speed_display',
     };
     return kGoodHighway.contains(v);
   } else if (k == 'railway') {
@@ -266,18 +284,53 @@ bool isGoodTags(Map<String, String> tags) {
     };
     return kGoodRailway.contains(v);
   } else if (k == 'natural') {
-    return v == 'tree' || v == 'rock' || v == 'spring' || v == 'shrub' || v == 'stone';
+    const goodNatural = {
+      'tree',
+      'rock',
+      'shrub',
+      'spring',
+      'cave_entrance',
+      'stone',
+      'birds_nest',
+      'termite_mound',
+      'tree_stump',
+      'bush',
+      'razed:tree',
+      'geyser',
+      'plant',
+      'anthill'
+    };
+    return goodNatural.contains(v);
   } else if (k == 'building') {
     return v != 'roof';
+  } else if (k == 'barrier') {
+    const kGoodBarriers = <String>{
+      'gate', 'bollard', 'lift_gate', 'kerb', 'block',
+      'cycle_barrier', 'stile', 'entrance', 'swing_gate',
+      'cattle_grid', 'toll_booth', 'kissing_gate', 'chain',
+      'turnstile', 'height_restrictor', 'sliding_gate', 'border_control',
+    };
+    return kGoodBarriers.contains(v);
+  } else if (k == 'man_made') {
+    const kWrongManMade = <String>{
+      'bridge', 'works', 'clearcut', 'pier', 'wastewater_plant',
+      'cutline', 'pipeline', 'embankment', 'breakwater',
+      'groyne', 'reservoir_covered', 'water_works', 'courtyard', 'dyke',
+    };
+    return !kWrongManMade.contains(v);
   }
   return false;
 }
 
+/// Whether we should set `check_date` on an object.
+/// Currently returns `isAmenityTags(tags)`.
 bool needsCheckDate(Map<String, String> tags) {
   // Decided that only amenities need checking.
   return isAmenityTags(tags);
 }
 
+/// What kind of objects should we snap this element to?
+/// Does not support multiple types, so barriers are snapped only to roads.
 SnapTo detectSnap(Map<String, String> tags) {
   final k = getMainKey(tags);
   if (k == null) return SnapTo.nothing;
@@ -301,6 +354,7 @@ SnapTo detectSnap(Map<String, String> tags) {
   return SnapTo.nothing;
 }
 
+/// Is this a kind of a way to which we can snap an object?
 bool isSnapTargetTags(Map<String, String> tags, [SnapTo? kind]) {
   if (tags.containsKey('highway') && (kind == null || kind == SnapTo.highway))
     return !{'steps', 'platform', 'services', 'rest_area', 'bus_stop', 'elevator'}
@@ -313,6 +367,8 @@ bool isSnapTargetTags(Map<String, String> tags, [SnapTo? kind]) {
   return false;
 }
 
+/// Checks whether some selected secondary tags are empty. We display this
+/// information in the micromapping mode.
 bool needsMoreInfo(Map<String, String> tags) {
   if (tags['amenity'] == 'bench') return tags['backrest'] == null;
   if (tags['amenity'] == 'bicycle_parking')
@@ -326,7 +382,7 @@ bool needsMoreInfo(Map<String, String> tags) {
   if (tags['emergency'] == 'fire_hydrant') return tags['fire_hydrant:type'] == null;
 
   if (tags['highway'] == 'crossing') return tags['crossing'] == null;
-  if (tags['highway'] == 'street_lamp') return tags['support'] == null;
+  // if (tags['highway'] == 'street_lamp') return tags['lamp_mount'] == null;
   if (tags['highway'] == 'bus_stop')
     return tags['bench'] == null || tags['shelter'] == null;
 

@@ -33,6 +33,8 @@ class OsmId {
     return OsmId(typ, int.parse(s.substring(1)));
   }
 
+  String get fullRef => '${kOsmElementTypeName[type]}/$ref';
+
   @override
   String toString() {
     String typ;
@@ -125,8 +127,9 @@ class OsmElement {
       center: center ?? this.center,
       bounds: bounds ?? this.bounds,
       nodes: clearMembers ? null : (nodes ?? this.nodes),
-      nodeLocations:
-          clearMembers ? null : (nodeLocations ?? this.nodeLocations),
+      nodeLocations: clearMembers || (nodeLocations?.isEmpty ?? false)
+          ? null
+          : (nodeLocations ?? this.nodeLocations),
       members: clearMembers ? null : members,
       isMember: isMember ?? this.isMember,
     );

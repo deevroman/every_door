@@ -1,5 +1,6 @@
 import 'package:every_door/constants.dart';
 import 'package:every_door/providers/editor_settings.dart';
+import 'package:every_door/providers/road_names.dart';
 import 'package:every_door/widgets/radio_field.dart';
 import 'package:every_door/providers/osm_data.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,6 @@ class AddressForm extends ConsumerStatefulWidget {
 }
 
 class _AddressFormState extends ConsumerState<AddressForm> {
-  late StreetAddress address;
   late final TextEditingController _houseController;
   late final TextEditingController _unitController;
   List<String> nearestStreets = [];
@@ -40,7 +40,7 @@ class _AddressFormState extends ConsumerState<AddressForm> {
   @override
   void initState() {
     super.initState();
-    address = widget.initialAddress ?? StreetAddress();
+    final address = widget.initialAddress ?? StreetAddress();
     _houseController = TextEditingController(text: address.housenumber);
     _unitController = TextEditingController(text: address.unit);
     street = address.street;
@@ -64,9 +64,10 @@ class _AddressFormState extends ConsumerState<AddressForm> {
 
   updateStreets() async {
     final provider = ref.read(osmDataProvider);
+    nearestStreets =
+        await ref.read(roadNameProvider).getNamesAround(widget.location);
     final addrs = await provider.getAddressesAround(widget.location, limit: 30);
     setState(() {
-      nearestStreets = _filterDuplicates(addrs.map((e) => e.street));
       nearestPlaces = _filterDuplicates(addrs.map((e) => e.place));
       nearestCities = _filterDuplicates(addrs.map((e) => e.city));
     });
@@ -77,11 +78,13 @@ class _AddressFormState extends ConsumerState<AddressForm> {
     final unit = _unitController.text.trim();
     final address = StreetAddress(
       housenumber: house.isEmpty ? null : house,
+      housename: widget.initialAddress?.housename,
       unit: unit.isEmpty ? null : unit,
       street: street,
       place: nearestPlaces.isNotEmpty ? place : null,
       city: nearestPlaces.isNotEmpty ? null : place,
     );
+    setState(() {});
     widget.onChange(address);
   }
 
@@ -100,13 +103,18 @@ class _AddressFormState extends ConsumerState<AddressForm> {
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 10.0),
-              child: Text(loc.addressHouseNumber, style: kFieldTextStyle),
+              child: Text(loc.addressHouseNumber,
+                  style: kFieldTextStyle.copyWith(
+                      color:
+                          _houseController.text.trim().isEmpty && street != null
+                              ? Colors.red
+                              : null)),
             ),
             TextFormField(
               controller: _houseController,
               keyboardType: editorSettings.fixNumKeyboard
                   ? TextInputType.visiblePassword
-                  : TextInputType.number,
+                  : TextInputType.numberWithOptions(signed: true),
               autofocus: widget.autoFocus,
               style: kFieldTextStyle,
               decoration: const InputDecoration(hintText: '1, 89, 154A, ...'),
@@ -141,7 +149,12 @@ class _AddressFormState extends ConsumerState<AddressForm> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 10.0),
-                child: Text(loc.addressStreet, style: kFieldTextStyle),
+                child: Text(loc.addressStreet,
+                    style: kFieldTextStyle.copyWith(
+                        color: _houseController.text.trim().isNotEmpty &&
+                                street == null
+                            ? Colors.red
+                            : null)),
               ),
               RadioField(
                   options: nearestStreets,

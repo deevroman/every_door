@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:every_door/constants.dart';
 import 'package:every_door/helpers/equirectangular.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ final geolocationProvider =
     StateNotifierProvider<GeolocationController, LatLng?>(
         (ref) => GeolocationController(ref));
 final trackingProvider = StateProvider<bool>((ref) => false);
+final rotationProvider = StateProvider<double>((ref) => 0.0);
 
 class GeolocationController extends StateNotifier<LatLng?> {
   static final _distance = DistanceEquirectangular();
@@ -128,6 +130,11 @@ class GeolocationController extends StateNotifier<LatLng?> {
   }
 
   _updateLocation(LatLng newLocation) {
+    if (!kSlowDownGPS) {
+      state = newLocation;
+      return;
+    }
+
     // Update state location only if it's far, time passed, or it is null.
     const kLocationThreshold = 10; // meters
     const kLocationInterval = Duration(seconds: 10);

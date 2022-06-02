@@ -109,6 +109,15 @@ class SettingsPage extends ConsumerWidget {
           SettingsSection(
             title: Text(loc.settingsPresentation),
             tiles: [
+              SettingsTile.switchTile(
+                title: Text(loc.settingsLeftHand),
+                onToggle: (value) {
+                  ref
+                      .read(editorSettingsProvider.notifier)
+                      .setLeftHand(value);
+                },
+                initialValue: editorSettings.leftHand,
+              ),
               SettingsTile(
                 title: Text(loc.settingsBackground),
                 trailing: Icon(Icons.navigate_next),
@@ -125,15 +134,6 @@ class SettingsPage extends ConsumerWidget {
             title: Text(loc.settingsEditor),
             tiles: [
               SettingsTile.switchTile(
-                title: Text(loc.settingsPreferContact),
-                onToggle: (value) {
-                  ref
-                      .read(editorSettingsProvider.notifier)
-                      .setPreferContact(value);
-                },
-                initialValue: editorSettings.preferContact,
-              ),
-              SettingsTile.switchTile(
                 title: Text(loc.settingsNumericKeyboard),
                 onToggle: (value) {
                   ref
@@ -142,6 +142,16 @@ class SettingsPage extends ConsumerWidget {
                 },
                 initialValue: editorSettings.fixNumKeyboard,
               ),
+              if (kShowContactSetting)
+                SettingsTile.switchTile(
+                  title: Text(loc.settingsPreferContact),
+                  onToggle: (value) {
+                    ref
+                        .read(editorSettingsProvider.notifier)
+                        .setPreferContact(value);
+                  },
+                  initialValue: editorSettings.preferContact,
+                ),
               SettingsTile(
                 title: Text(loc.settingsDefaultPayment),
                 value: Text(editorSettings.defaultPayment.join(', ')),

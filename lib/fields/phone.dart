@@ -130,8 +130,12 @@ class _PhoneInputFieldState extends ConsumerState<PhoneInputField> {
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
               labelText: widget.field.label,
+              errorStyle: TextStyle(color: Colors.amber.shade700),
+              focusedErrorBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor, width: 2.0)),
               suffixIcon: GestureDetector(
-                child: Icon(Icons.add_circle),
+                child: Icon(Icons.done),
                 onTap: () {
                   if (submitPhone(_controller.text)) _focus.unfocus();
                 },

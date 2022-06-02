@@ -6,24 +6,30 @@ final editorSettingsProvider =
         (_) => EditorSettingsProvider());
 
 class EditorSettings {
+  static const kDefaultPayment = ['visa', 'mastercard'];
+
   final bool preferContact;
   final bool fixNumKeyboard;
+  final bool leftHand;
   final List<String> defaultPayment;
 
   const EditorSettings({
     this.preferContact = false,
     this.fixNumKeyboard = false,
-    this.defaultPayment = const ['visa', 'mastercard'],
+    this.leftHand = false,
+    this.defaultPayment = kDefaultPayment,
   });
 
   EditorSettings copyWith({
     bool? preferContact,
     bool? fixNumKeyboard,
+    bool? leftHand,
     List<String>? defaultPayment,
   }) {
     return EditorSettings(
       preferContact: preferContact ?? this.preferContact,
       fixNumKeyboard: fixNumKeyboard ?? this.fixNumKeyboard,
+      leftHand: leftHand ?? this.leftHand,
       defaultPayment: defaultPayment ?? this.defaultPayment,
     );
   }
@@ -33,7 +39,10 @@ class EditorSettings {
     return EditorSettings(
       preferContact: data[0] == '1',
       fixNumKeyboard: data[1] == '1',
-      defaultPayment: data[2].split(';').map((s) => s.trim()).toList(),
+      defaultPayment: data[2].length < 2
+          ? kDefaultPayment
+          : data[2].split(';').map((s) => s.trim()).toList(),
+      leftHand: data.length >= 4 && data[3] == '1',
     );
   }
 
@@ -41,7 +50,8 @@ class EditorSettings {
     return [
       preferContact ? '1' : '0',
       fixNumKeyboard ? '1' : '0',
-      defaultPayment.join(';')
+      defaultPayment.join(';'),
+      leftHand ? '1' : '0',
     ];
   }
 }
@@ -70,6 +80,11 @@ class EditorSettingsProvider extends StateNotifier<EditorSettings> {
 
   setFixNumKeyboard(bool value) {
     state = state.copyWith(fixNumKeyboard: value);
+    store();
+  }
+
+  setLeftHand(bool value) {
+    state = state.copyWith(leftHand: value);
     store();
   }
 

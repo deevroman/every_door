@@ -1,3 +1,4 @@
+import 'package:every_door/constants.dart';
 import 'package:every_door/fields/helpers/new_addr.dart';
 import 'package:every_door/widgets/radio_field.dart';
 import 'package:every_door/models/address.dart';
@@ -7,7 +8,6 @@ import 'package:every_door/screens/editor/addr_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:every_door/models/field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AddressField extends PresetField {
   AddressField({required String label})
@@ -37,6 +37,7 @@ class AddressInput extends ConsumerStatefulWidget {
 }
 
 class _AddressInputState extends ConsumerState<AddressInput> {
+  static const kChooseOnMap = '🗺️';
   List<StreetAddress> nearestAddresses = [];
 
   @override
@@ -73,9 +74,9 @@ class _AddressInputState extends ConsumerState<AddressInput> {
       },
     );
 
-    if (addr == null || addr.isEmpty) return;
+    if (addr == null) return;
     setState(() {
-      addr.setTags(widget.element);
+      addr.forceTags(widget.element);
     });
   }
 
@@ -89,23 +90,18 @@ class _AddressInputState extends ConsumerState<AddressInput> {
     );
     if (addr != null && addr.isNotEmpty) {
       setState(() {
-        addr.setTags(widget.element);
+        addr.forceTags(widget.element);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    if (nearestAddresses.isEmpty) {
-      return Text(loc.filterNoAddresses);
-    }
-
     final current = StreetAddress.fromTags(widget.element.getFullTags());
     final options = nearestAddresses.map((e) => e.toString()).toList();
     if (current.isEmpty) {
-      options.insert(0, '🗺️');
-      options.add('+');
+      options.insert(0, kChooseOnMap);
+      options.add(kManualOption);
     }
     return RadioField(
       options: options,
@@ -115,9 +111,9 @@ class _AddressInputState extends ConsumerState<AddressInput> {
           setState(() {
             StreetAddress.clearTags(widget.element);
           });
-        } else if (value == '+') {
+        } else if (value == kManualOption) {
           addAddress(context);
-        } else if (value == '🗺️') {
+        } else if (value == kChooseOnMap) {
           chooseAddressOnMap();
         } else {
           final addr = nearestAddresses

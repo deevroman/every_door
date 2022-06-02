@@ -1,17 +1,17 @@
 {
-  "loadingStart": "Initializing...",
+  "loadingStart": "Initializing…",
   "@loadingStart": {
     "description": "Initial message for the loading screen, virtually unseen."
   },
-  "loadingPresets": "Loading presets",
+  "loadingPresets": "Loading presets…",
   "@loadingPresets": {
     "description": "Loading screen message for loading presets."
   },
-  "loadingChanges": "Loading changes",
+  "loadingChanges": "Loading changes…",
   "@loadingChanges": {
     "description": "Loading screen message for loading stored changes."
   },
-  "loadingLocation": "Acquiring location",
+  "loadingLocation": "Acquiring location…",
   "@loadingLocation": {
     "description": "Loading screen message for firing up GPS and waiting for a location."
   },
@@ -95,7 +95,7 @@
   "@editorMoreFields": {
     "description": "Title of a additional fields group in editor."
   },
-  "editorLoadingPreset": "Loading preset...",
+  "editorLoadingPreset": "Loading preset…",
   "@editorLoadingPreset": {
     "description": "Message shown when loading a preset in the editor."
   },
@@ -145,6 +145,10 @@
   "@editorDeleteButton": {
     "description": "Delete"
   },
+  "tagsUrlCopied": "URL copied to clipboard",
+  "@tagsUrlCopied": {
+    "description": "Popup message when the link to the object was copied to the clipboard."
+  },
   "tagsNewPoint": "New Point",
   "@tagsNewPoint": {
     "description": "Tag editor panel title for a new amenity."
@@ -160,6 +164,14 @@
   "tagsValue": "Value",
   "@tagsValue": {
     "description": "Tags panel, add a new tag dialog: value label"
+  },
+  "tagsKeyError": "Key is too rare",
+  "@tagsKeyError": {
+    "description": "Validation error for when an entered key is not in the top 5000 keys from taginfo."
+  },
+  "tagsValueLong": "Value is too long",
+  "@tagsValueLong": {
+    "description": "Validation error for when the value length exceeds 255 characters."
   },
   "settingsTitle": "Configuration",
   "@settingsTitle": {
@@ -220,6 +232,10 @@
   "@settingsBackground": {
     "description": "Settings entry for choosing background satellite imagery."
   },
+  "settingsLeftHand": "Left hand controls",
+  "@settingsLeftHand": {
+    "description": "Switch for enabling left hand controls, when most buttons move to the left."
+  },
   "settingsEditor": "Editor",
   "@settingsEditor": {
     "description": "Title for the settings section for editor presets."
@@ -240,7 +256,7 @@
   "@accountTitle": {
     "description": "Title for the account page."
   },
-  "accountLoginOAuth": "Login with OAuth",
+  "accountLoginOAuth": "Log in with OAuth",
   "@accountLoginOAuth": {
     "description": "Button label for logging in to OSM via OAuth."
   },
@@ -248,7 +264,7 @@
   "@accountOAuthError": {
     "description": "Alert title for when OAuth login failed."
   },
-  "accountLoginPassword": "Login with Password",
+  "accountLoginPassword": "Log in with Password",
   "@accountLoginPassword": {
     "description": "Button label for logging in to OSM with a password."
   },
@@ -268,7 +284,7 @@
   "@accountPasswordTitle": {
     "description": "Title for the input dialog for login and password."
   },
-  "accountFieldLogin": "Login",
+  "accountFieldLogin": "Username",
   "@accountFieldLogin": {
     "description": "Label for the OSM login."
   },
@@ -280,7 +296,7 @@
   "@accountAuthErrorTitle": {
     "descripton": "Title for the alert dialog about an incorrect password."
   },
-  "accountAuthErrorMessage": "Wrong login or password.",
+  "accountAuthErrorMessage": "Wrong username or password.",
   "@accountAuthErrorMessage": {
     "descripton": "Message for the alert dialog about an incorrect password."
   },
@@ -307,7 +323,7 @@
   "@changesUploadedTitle": {
     "description": "Title for the notification about a successful upload."
   },
-  "changesUploadedMessage": "Sent {changes} to API.",
+  "changesUploadedMessage": "Sent {changes} to the API.",
   "@changesUploadedMessage": {
     "description": "Message for the notification about a successful upload.",
     "placeholders": {
@@ -475,7 +491,7 @@
   "@messageDataObsolete": {
     "description": "Message that appears on the main screen when OSM data is outdated."
   },
-  "enableGPS" : "Enable GPS",
+  "enableGPS": "Enable GPS",
   "@enableGPS": {
     "description": "Title of the alert for enabling location services."
   },
@@ -484,7 +500,7 @@
     "description": "Contents of the alert for enabling location services."
   },
   "enableLocation": "Enable Location",
-  "@enableLocation":  {
+  "@enableLocation": {
     "description": "Title of the alert for allowing app access to location."
   },
   "enableLocationMessage": "Please allow location access for the app in the settings panel that will be shown.",
@@ -498,6 +514,33 @@
   "buttonNo": "No",
   "@buttonNo": {
     "description": "Button for dismissal."
+  },
+  "buildingX": "Building {n}",
+  "@buildingX": {
+    "description": "Option displayed when there's multiple buildings under a tap.",
+    "placeholders": {
+      "n": {
+        "example": "12A"
+      }
+    }
+  },
+  "addressX": "Address {n}",
+  "@addressX": {
+    "description": "Option displayed when there's multiple addresses under a tap.",
+    "placeholders": {
+      "n": {
+        "example": "12A"
+      }
+    }
+  },
+  "entranceX": "Entrance {n}",
+  "@entranceX": {
+    "description": "Option displayed when there's multiple entrances under a tap.",
+    "placeholders": {
+      "n": {
+        "example": "1-15"
+      }
+    }
   },
   "buildingLevels": "Levels",
   "@buildingLevels": {
@@ -519,14 +562,24 @@
   "@buildingMoreButton": {
     "description": "Button label for opening the building object in a full editor."
   },
+  "buildingTypeAddress": "address",
+  "@buildingTypeAddress": {},
   "buildingTypeHouse": "house",
+  "@buildingTypeHouse": {},
   "buildingTypeApartments": "apartments",
+  "@buildingTypeApartments": {},
   "buildingTypeRetail": "retail",
+  "@buildingTypeRetail": {},
   "buildingTypeCommercial": "commercial",
+  "@buildingTypeCommercial": {},
   "buildingTypeShed": "shed",
+  "@buildingTypeShed": {},
   "buildingTypeIndustrial": "industrial",
+  "@buildingTypeIndustrial": {},
   "buildingTypeGarage": "garage",
+  "@buildingTypeGarage": {},
   "buildingTypeConstruction": "construction",
+  "@buildingTypeConstruction": {},
   "entranceFlats": "Flats",
   "@entranceFlats": {
     "description": "Label for addr:flats in the form. Keep it short."
@@ -548,9 +601,13 @@
     "description": "Label for entrance access in the form. Keep it short."
   },
   "entranceAccessYes": "open",
+  "@entranceAccessYes": {},
   "entranceAccessPrivate": "private",
+  "@entranceAccessPrivate": {},
   "entranceAccessNo": "no",
+  "@entranceAccessNo": {},
   "entranceAccessDelivery": "delivery",
+  "@entranceAccessDelivery": {},
   "entranceWheelchair": "Wheelchair",
   "@entranceWheelchair": {
     "description": "Label for entrance wheelchair access in the form. Keep it short."
@@ -560,12 +617,19 @@
     "description": "Label for entrance type (value of entrance=* tag) in the form. Keep it short."
   },
   "entranceTypeMain": "main",
+  "@entranceTypeMain": {},
   "entranceTypeStaircase": "staircase",
+  "@entranceTypeStaircase": {},
   "entranceTypeHome": "home",
+  "@entranceTypeHome": {},
   "entranceTypeShop": "shop",
+  "@entranceTypeShop": {},
   "entranceTypeService": "service",
+  "@entranceTypeService": {},
   "entranceTypeGarage": "garage",
+  "@entranceTypeGarage": {},
   "entranceTypeEmergency": "emergency",
+  "@entranceTypeEmergency": {},
   "addressHouseNumber": "House",
   "@addressHouseNumber": {
     "description": "Label for addr:housenumber in the form. Keep it short."
@@ -590,7 +654,7 @@
   "@addressPlace": {
     "description": "Label for addr:place or addr:city in the form. Keep it short."
   },
-  "apiStatusDownloading": "Downloading data",
+  "apiStatusDownloading": "Downloading data…",
   "@apiStatusDownloading": {
     "description": "Text displayed when the app is downloading data from the API."
   },

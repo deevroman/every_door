@@ -1,11 +1,80 @@
 # Every Door App Change Log
 
+## 0.4.0
+
+_Released on 2022-05-22_
+
+* Redesigned app navigation (thanks Alexey A for ideas).
+* Default locale is English now.
+* Fixed issue with storing default payment tags.
+* Added zooming buttons to the map when adding an object.
+* Added (black) entrances to that map as well.
+* Moved `tourism=picnic_site` to the micromapping mode.
+* For `shop=yes`, displaying `shop` in a tile, not `yes`.
+* Objects with `club=*` did not register and were not uploaded.
+* When snapping a new point to a way failed, adding a `fixme` tag to it.
+* Added API status panel to entrances and micromapping modes.
+* Drawing much more objects on the map for micromapping.
+* Fixed the placeholder API error when updating a building
+  after adding an entrance to it.
+* Maps can be rotated now.
+* Improved sorting in the imagery list.
+* Italian translation by @ricloy.
+* French translation by @paulhenry46.
+
+### Editor
+
+* Added current values to combo options.
+* Increased the number of options to 50 for combo panels.
+* Case-insensitive search on the combo page.
+* Fixed parsing `Su off` in opening hours.
+* For the phone field, validation message is yellow, since it's informational.
+* Social media tag values are now clickable when they are not in an URL form.
+* Proper keyboard replacement for `ref` and other numeric fields.
+* Changed the icon for the tags panel.
+* Replaced the plus icon with a checkmark for phone and website fields.
+* Moving standard fields to the icon labels block.
+* Returned the big green "Save" button.
+
+### Entrances Mode
+
+* Allowing addresses with no street, and fixed removing house numbers.
+* Added the address form to entrances (click on `+ADDR` button).
+* Added a button for opening an editor for an entrance.
+* Tapping away from a building / entrance form saves the edits.
+* Choose "address" building type to add a building-less address.
+
+## 0.3.0
+
+_Released on 2022-05-09_
+
+* Made the saving button into a small floating one.
+* Swapped tracking and mode changing buttons.
+* Road names in address forms are also taken from highways.
+* Combo options are now not limited to a preset list.
+* Removed the setting for `contact:` prefixes.
+* Enabled opening links and phone numbers from the editor.
+* Long tap on the sharing button on the tags panel to copy the link.
+* Added missing translations for the entrances mode.
+* Sped up storing elements to the database slightly.
+* Displaying all alternative points on the map, not just modified.
+* Option to move buttons from right to left.
+* Added safe areas to layout.
+* Finally caught the offset issue when dragging entrances onto the map.
+* Fixed offset in numbers on the map.
+
 ## 0.2.0
 
-_Unreleased_
+_Released on 2022-05-03_
 
-* First public version.
+* **First public version.**
 * Patched `ref`s to be numbers.
+* Allowing floors without addresses.
+* Removed closed barrier ways and modified roads from the map.
+* Won't allow free-form keys that are not popular enough.
+* Enforced maximal value length of 255 characters.
+* Added sharing button to the raw tags panel.
+* Adding `opening_hours` field if an amenity preset doesn't have one.
 
 ## 0.1.13
 

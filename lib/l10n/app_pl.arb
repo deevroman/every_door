@@ -1,0 +1,306 @@
+{
+  "loadingLocation": "Pozyskiwanie lokalizacji",
+  "@loadingLocation": {
+    "description": "Loading screen message for firing up GPS and waiting for a location."
+  },
+  "loadingChangesFailed": "Nie udało się wczytać zmian",
+  "@loadingChangesFailed": {
+    "description": "Loading screen notification title for when loading changes has failed."
+  },
+  "tileNo": "brak",
+  "@tileNo": {
+    "description": "Prefix for a list of icons for attributes missing in amenity."
+  },
+  "legendOther": "Inne",
+  "@legendOther": {
+    "description": "Legend item for all other types."
+  },
+  "filterNoAddresses": "Brak adresów w pobliżu",
+  "@filterNoAddresses": {
+    "description": "An error message for no addresses nearby, used on filter pane and in address editor."
+  },
+  "filterByAddress": "Według adresu",
+  "@filterByAddress": {
+    "description": "Filter pane, label for choosing an address to filter by."
+  },
+  "filterByFloor": "Według piętra",
+  "@filterByFloor": {
+    "description": "Filter pane, label for choosing a floor to filter by."
+  },
+  "filterEmpty": "puste",
+  "@filterEmpty": {
+    "description": "Filter pane, an option in the lists to show only amenities with empty floor or address."
+  },
+  "filterNonConfirmed": "Tylko niepotwierdzone",
+  "@filterNonConfirmed": {
+    "description": "Filter pane, a switch for showing only amenities that were not confirmed."
+  },
+  "chooseType": "Wybierz typ",
+  "@chooseType": {
+    "description": "Search field hint on the type choosing screen."
+  },
+  "chooseTypeClear": "Wyczyść",
+  "@chooseTypeClear": {
+    "description": "Tooltip for a button to clear search field contents."
+  },
+  "editorSave": "Zapisz",
+  "@editorSave": {
+    "description": "Save button title in the editor"
+  },
+  "editorCloseTitle": "Zamknąć edytor?",
+  "@editorCloseTitle": {
+    "description": "Title for the message on closing the editor without saving changes."
+  },
+  "editorMoreFields": "Więcej pól",
+  "@editorMoreFields": {
+    "description": "Title of a additional fields group in editor."
+  },
+  "editorMove": "Przesuń",
+  "@editorMove": {
+    "description": "Label for the map, a hint that you can move the object."
+  },
+  "editorMarkActive": "Oznacz jako aktywny",
+  "@editorMarkActive": {
+    "description": "Button title to mark an amenity active (non-defunct)."
+  },
+  "editorRestore": "Przywróć",
+  "@editorRestore": {
+    "description": "Button title to restore a deleted amenity (before it's uploaded and final)."
+  },
+  "editorDeleteTitle": "Usunąć {amenity}?",
+  "@editorDeleteTitle": {
+    "description": "Dialog title for deleting an amenity.",
+    "placeholders": {
+      "amenity": {
+        "description": "Amenity title"
+      }
+    }
+  },
+  "editorDeleteButton": "Usuń",
+  "@editorDeleteButton": {
+    "description": "Delete"
+  },
+  "tagsUrlCopied": "Link został skopiowany do schowka",
+  "@tagsUrlCopied": {
+    "description": "Popup message when the link to the object was copied to the clipboard."
+  },
+  "tagsNewPoint": "Nowy punkt",
+  "@tagsNewPoint": {
+    "description": "Tag editor panel title for a new amenity."
+  },
+  "tagsAddTag": "Dodaj tag",
+  "@tagsAddTag": {
+    "description": "Tags panel button for adding a new tag."
+  },
+  "tagsValueLong": "Wartość jest zbyt długa",
+  "@tagsValueLong": {
+    "description": "Validation error for when the value length exceeds 255 characters."
+  },
+  "settingsTitle": "Ustawienia",
+  "@settingsTitle": {
+    "description": "App bar title for the settings panel."
+  },
+  "loadingStart": "Inicjalizacja...",
+  "@loadingStart": {
+    "description": "Initial message for the loading screen, virtually unseen."
+  },
+  "loadingPresets": "Ładowanie ustawień wstępnych",
+  "@loadingPresets": {
+    "description": "Loading screen message for loading presets."
+  },
+  "loadingChanges": "Ładowanie zmian",
+  "@loadingChanges": {
+    "description": "Loading screen message for loading stored changes."
+  },
+  "chooseLocation": "Wybierz lokalizację",
+  "@chooseLocation": {
+    "description": "Title for the screen for choosing a location on a map."
+  },
+  "editorCloseMessage": "Utracisz niezapisane zmiany. Kontynuować?",
+  "@editorCloseMessage": {
+    "description": "Message on closing the editor without saving changes."
+  },
+  "editorMissing": "Nie istnieje",
+  "@editorMissing": {
+    "description": "Button title to delete an amenity (since it's missing)."
+  },
+  "settingsDataManagement": "Zarządzanie danymi",
+  "@settingsDataManagement": {
+    "description": "Section title for data settings."
+  },
+  "settingsApiServer": "Serwer API",
+  "@settingsApiServer": {
+    "description": "Section title for API server settings."
+  },
+  "fieldHoursButton": "Ustaw godziny otwarcia",
+  "@fieldHoursButton": {
+    "description": "Text on the hours button when there's no value."
+  },
+  "fieldHoursWeekdays": "Pn Wt Śr Cz Pt So Nd",
+  "@fieldHoursWeekdays": {
+    "description": "Space-separated list of 7 weekday abbreviations, from Monday to Sunday."
+  },
+  "fieldHoursBreak": "Przerwa",
+  "@fieldHoursBreak": {
+    "description": "Title for the break interval."
+  },
+  "fieldHoursFullDay": "Cały dzień",
+  "@fieldHoursFullDay": {
+    "description": "Switch for 24/7 opening hours."
+  },
+  "fieldHoursOpens": "Otwiera się",
+  "@fieldHoursOpens": {
+    "description": "Title for the interval start."
+  },
+  "fieldHoursAddBreak": "Dodaj przerwę",
+  "@fieldHoursAddBreak": {
+    "description": "Button in opening hours editor to add a break."
+  },
+  "changesPurgeMessage": "Usunąć wszystkie zarejestrowane zmiany i przywrócić oryginalne dane?",
+  "@changesPurgeMessage": {
+    "description": "Dialog message for confirming deletion of all changes."
+  },
+  "fieldHoursTitle": "Godziny otwarcia",
+  "@fieldHoursTitle": {
+    "description": "Title for the opening hours editor pane."
+  },
+  "fieldHoursCloses": "Zamyka się",
+  "@fieldHoursCloses": {
+    "description": "Title for the interval end."
+  },
+  "fieldHoursNext": "Dalej",
+  "@fieldHoursNext": {
+    "description": "Button in the interval editor to move to the closing time."
+  },
+  "fieldCardsAccepted": "akceptowane",
+  "@fieldCardsAccepted": {
+    "description": "Payment field label for cards accepted."
+  },
+  "enableLocationMessage": "Zezwól aplikacji na dostęp do lokalizacji w panelu ustawień, który zostanie wyświetlony.",
+  "@enableLocationMessage": {
+    "description": "Contents of the alert for allowing app access to location."
+  },
+  "buttonYes": "Tak",
+  "@buttonYes": {
+    "description": "Button for approval."
+  },
+  "buttonNo": "Nie",
+  "@buttonNo": {
+    "description": "Button for dismissal."
+  },
+  "buildingX": "Budynek {n}",
+  "@buildingX": {
+    "description": "Option displayed when there's multiple buildings under a tap.",
+    "placeholders": {
+      "n": {
+        "example": "12A"
+      }
+    }
+  },
+  "addressX": "Adres {n}",
+  "@addressX": {
+    "description": "Option displayed when there's multiple addresses under a tap.",
+    "placeholders": {
+      "n": {
+        "example": "12A"
+      }
+    }
+  },
+  "entranceX": "Wejście {n}",
+  "@entranceX": {
+    "description": "Option displayed when there's multiple entrances under a tap.",
+    "placeholders": {
+      "n": {
+        "example": "1-15"
+      }
+    }
+  },
+  "buildingLevels": "Piętra",
+  "@buildingLevels": {
+    "description": "Label for building:levels in the form. Keep it short."
+  },
+  "buildingRoofLevels": "Piętra w dachu",
+  "@buildingRoofLevels": {
+    "description": "Label for roof:levels in the form. Keep it short."
+  },
+  "buildingRoofShape": "Kształt dachu",
+  "@buildingRoofShape": {
+    "description": "Label for roof:shape in the form. Keep it short."
+  },
+  "buildingType": "Rodzaj",
+  "@buildingType": {
+    "description": "Label for building type (value of building=*) in the form. Keep it short."
+  },
+  "buildingMoreButton": "Pokaż więcej",
+  "@buildingMoreButton": {
+    "description": "Button label for opening the building object in a full editor."
+  },
+  "buildingTypeAddress": "adres",
+  "@buildingTypeAddress": {},
+  "buildingTypeCommercial": "komercyjny",
+  "@buildingTypeCommercial": {},
+  "buildingTypeShed": "szopa",
+  "@buildingTypeShed": {},
+  "buildingTypeIndustrial": "przemysłowy",
+  "@buildingTypeIndustrial": {},
+  "buildingTypeGarage": "garaż",
+  "@buildingTypeGarage": {},
+  "buildingTypeConstruction": "w budowie",
+  "@buildingTypeConstruction": {},
+  "entranceIsUnit": "Zapisz numer mieszkania w addr:unit",
+  "@entranceIsUnit": {
+    "description": "Label for a switch to use addr:unit instead of addr:flats."
+  },
+  "entranceAccess": "Dostęp",
+  "@entranceAccess": {
+    "description": "Label for entrance access in the form. Keep it short."
+  },
+  "fieldPhoneWrong": "Nieprawidłowy format numeru telefonu",
+  "@fieldPhoneWrong": {
+    "description": "Validation message for a non-standard phone number."
+  },
+  "fieldFloorFloorDesc": "Piętro jak na nawigacji i w windach",
+  "@fieldFloorFloorDesc": {
+    "descripton": "Description for the \"level\" tag."
+  },
+  "entranceFlats": "Mieszkania",
+  "@entranceFlats": {
+    "description": "Label for addr:flats in the form. Keep it short."
+  },
+  "fieldCheckboxYes": "tak",
+  "@fieldCheckboxYes": {
+    "description": "Checkbox name for yes."
+  },
+  "fieldCheckboxNo": "nie",
+  "@fieldCheckboxNo": {
+    "description": "Checkbox name for no."
+  },
+  "messageNoData": "Brak danych, dotknij tutaj, aby pobrać",
+  "@messageNoData": {
+    "description": "Message that appears on the main screen when there's no OSM data."
+  },
+  "fieldFloorLevelDesc": "Numer piętra zaczynający się od 0 dla parteru",
+  "@fieldFloorLevelDesc": {
+    "description": "Description for the \"addr:floor\" tag."
+  },
+  "messageDataObsolete": "Dane są przestarzałe, dotknij tutaj, aby odświeżyć",
+  "@messageDataObsolete": {
+    "description": "Message that appears on the main screen when OSM data is outdated."
+  },
+  "enableGPS": "Włącz GPS",
+  "@enableGPS": {
+    "description": "Title of the alert for enabling location services."
+  },
+  "enableGPSMessage": "Włącz usługi lokalizacyjne w panelu ustawień, który zostanie wyświetlony.",
+  "@enableGPSMessage": {
+    "description": "Contents of the alert for enabling location services."
+  },
+  "enableLocation": "Włącz lokalizację",
+  "@enableLocation": {
+    "description": "Title of the alert for allowing app access to location."
+  },
+  "entranceFlatsNumberList": "Powinna to być lista liczb",
+  "@entranceFlatsNumberList": {
+    "description": "Validation message for addr:flats."
+  }
+}

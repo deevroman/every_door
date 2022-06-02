@@ -20,8 +20,7 @@ class WebsiteField extends PresetField {
 
   @override
   bool hasRelevantKey(Map<String, String> tags) {
-    return websiteProviders.any(
-        (key) => tags.containsKey(key) || tags.containsKey('contact:$key'));
+    return websiteProviders.any((provider) => provider.hasKey(tags));
   }
 }
 
@@ -39,6 +38,7 @@ class _WebsiteInputFieldState extends ConsumerState<WebsiteInputField> {
   late TextEditingController _controller;
   late WebsiteProvider _provider;
   late FocusNode _fieldFocus;
+  int currentLength = 0;
 
   @override
   void initState() {
@@ -70,6 +70,7 @@ class _WebsiteInputFieldState extends ConsumerState<WebsiteInputField> {
     if (value.isEmpty || !_provider.isValid(value)) return false;
     _controller.clear();
     setState(() {
+      currentLength = 0;
       _provider.setValue(widget.element, _provider.format(value),
           preferContact: ref.read(editorSettingsProvider).preferContact);
     });
@@ -163,10 +164,11 @@ class _WebsiteInputFieldState extends ConsumerState<WebsiteInputField> {
                   controller: _controller,
                   focusNode: _fieldFocus,
                   keyboardType: TextInputType.url,
+                  maxLength: currentLength > 200 ? 255 : null,
                   decoration: InputDecoration(
                     hintText: _provider.label,
                     suffixIcon: GestureDetector(
-                      child: Icon(Icons.add_circle),
+                      child: Icon(Icons.done),
                       onTap: () {
                         if (submitWebsite(_controller.text))
                           _fieldFocus.unfocus();
@@ -174,6 +176,11 @@ class _WebsiteInputFieldState extends ConsumerState<WebsiteInputField> {
                     ),
                   ),
                   onSubmitted: submitWebsite,
+                  onChanged: (value) {
+                    setState(() {
+                      currentLength = value.length;
+                    });
+                  },
                 ),
               ),
             )
@@ -202,9 +209,9 @@ class _WebsiteInputFieldState extends ConsumerState<WebsiteInputField> {
                                 website.provider.display(website.value), 25),
                             style: kFieldTextStyle),
                         onTap: () {
-                          if (kFollowLinks &&
-                              website.value.startsWith('http')) {
-                            launch(website.value);
+                          final url = website.provider.url(website.value);
+                          if (kFollowLinks && url != null) {
+                            launch(url);
                           }
                         },
                       ),
