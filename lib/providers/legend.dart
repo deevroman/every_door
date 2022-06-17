@@ -36,6 +36,7 @@ class LegendController extends StateNotifier<List<LegendItem>> {
     Color(0xffe7298a),
     Color(0xff66a61e),
     Color(0xffe6ab02),
+    Color(0xffff1744),
   ];
 
   LegendController(this._ref) : super([]);
