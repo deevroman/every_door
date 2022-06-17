@@ -36,9 +36,18 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '2.10.4'
+      
+      - env:
+          KEY_JKS: ${{ secrets.KEY_JKS }}
+        run: echo $KEY_JKS > android/key.jks
+      
       - run: flutter config --no-analytics
-      - run: flutter pub get
-      - run: flutter build apk
+      - env:
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: flutter pub get
+      - env:
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: flutter build apk
 
       - uses: actions/upload-artifact@v2
         with:
