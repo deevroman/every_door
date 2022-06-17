@@ -3,7 +3,7 @@ import 'package:flutter/material.dart' show Colors, TextStyle;
 const kAppTitle = 'Every Door';
 const kAppVersion = '0.4.0'; // Also used for presets.db versioning
 
-const kDefaultLocation = <double>[59.42, 24.71];
+const kDefaultLocation = <double>[59.94, 30.39];
 const kDatabaseName = 'every_door.db';
 const kBigRadius = 1000; // for downloading, in meters
 const kSmallRadius = 400; // for downloading, in meters
@@ -18,7 +18,7 @@ const kSuperObsoleteData = Duration(days: 14); // for purging
 const kAmenitiesInList = 12; // for shops & amenities mode
 const kMicroStuffInList = 24; // same, but for micromapping mode
 const kTapRadius = 20.0; // flutter pixels
-const kOldAmenityDays = 14; // check_date expiration rate
+const kOldAmenityDays = 28; // check_date expiration rate
 const kFieldColor = Colors.lightBlueAccent;
 const kFieldFontSize = 18.0; // font size in fields
 const kFieldTextStyle = TextStyle(fontSize: kFieldFontSize);
