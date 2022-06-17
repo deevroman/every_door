@@ -3,7 +3,7 @@ import 'package:flutter/material.dart' show Colors, TextStyle;
 const kAppTitle = 'Every Door';
 const kAppVersion = '1.0'; // Also used for presets.db versioning
 
-const kDefaultLocation = <double>[59.42, 24.71];
+const kDefaultLocation = <double>[59.94, 30.39];
 const kDatabaseName = 'every_door.db';
 const kBigRadius = 1000; // for downloading, in meters
 const kSmallRadius = 400; // for downloading, in meters
@@ -19,8 +19,7 @@ const kSuperObsoleteData = Duration(days: 14); // for purging
 const kAmenitiesInList = 12; // for shops & amenities mode
 const kMicroStuffInList = 24; // same, but for micromapping mode
 const kTapRadius = 20.0; // flutter pixels
-const kOldAmenityDays = 61; // check_date expiration rate
-const kOldAmenityDaysEditor = 3; // check_date expiration rate for the editor
+const kOldAmenityDays = 28; // check_date expiration rate
 const kFieldColor = Colors.lightBlueAccent;
 const kFieldFontSize = 18.0; // font size in fields
 const kFieldTextStyle = TextStyle(fontSize: kFieldFontSize);
@@ -34,7 +33,7 @@ const kInitialZoom = 17.0; // For POI list screen
 const kMicromappingTapZoom = 19.0; // how much to zoom in when tapping a bunch of elements in micromapping
 const kRotationThreshold = 30.0; // degrees, for snapping to zero rotation
 const kManualOption = '✍️'; // Emoji icon for entering values by hand
-const kMinElementsForWarning = 60000; // Alerting user when they have that many elements downloaded
+const kMinElementsForWarning = 20000; // Alerting user when they have that many elements downloaded
 const kChangesetSplitGap = 0.02; // Decimal degrees, min distance between groups of changes
 const kMaxBulkDownloadZoom = 18; // Max zoom for bulk downloading tiles
 
