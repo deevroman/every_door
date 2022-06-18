@@ -39,7 +39,7 @@ jobs:
       
       - env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
-        run: echo $KEY_JKS | base64 --decode > android/key.jks
+        run: echo $KEY_JKS | base64 --decode -o android/key.jks
       
       - run: flutter config --no-analytics
       - env:
