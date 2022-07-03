@@ -211,7 +211,10 @@ class _WebsiteInputFieldState extends ConsumerState<WebsiteInputField> {
                         onTap: () {
                           final url = website.provider.url(website.value);
                           if (kFollowLinks && url != null) {
-                            launch(url);
+                            final uri = Uri.tryParse(url);
+                            if (uri != null)
+                              launchUrl(uri,
+                                  mode: LaunchMode.externalApplication);
                           }
                         },
                       ),

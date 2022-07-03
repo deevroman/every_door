@@ -8,6 +8,20 @@ import sys
 import unicodedata
 
 
+# Copied from ../lib/helpers/good_tags.dart
+MAIN_KEYS = [
+    'amenity', 'shop', 'craft', 'tourism', 'historic', 'club',
+    'highway', 'railway',
+    'office', 'healthcare', 'leisure', 'natural',
+    'emergency', 'waterway', 'man_made', 'power', 'aeroway', 'aerialway',
+    'landuse', 'military', 'barrier', 'building', 'entrance', 'boundary',
+    'advertising', 'playground', 'traffic_calming',
+]
+
+# A global list.
+non_searchable_presets = []
+
+
 def open_or_download(path, filename, from_nsi=False):
     if path:
         fullname = os.path.join(path, filename)
@@ -110,14 +124,23 @@ def import_presets(cur, path):
                 continue
             if not row['tags']:
                 continue
+
+            if not row.get('searchable', True) or name.startswith('entrance'):
+                non_searchable_presets.append(name)
             tags = json.dumps(row['tags'])
+            name_parts = name.split('/')
+            num_steps = len(name_parts)
+            try:
+                main_index = 50 - MAIN_KEYS.index(name.split('/')[0])
+            except ValueError:
+                main_index = 90
             yield (
                 name,
                 1 if 'area' in row['geometry'] else 1,
                 tags if 'addTags' not in row else json.dumps(row['addTags']),
                 tags if 'removeTags' not in row else json.dumps(row['removeTags']),
                 row.get('icon'),
-                row.get('matchScore', 1.0) * 100,
+                int(row.get('matchScore', 1.0) * 100) * 1000 + num_steps * 100 + main_index,
                 None if 'locationSet' not in row else json.dumps(row['locationSet']),
             )
 
@@ -185,6 +208,21 @@ def import_presets(cur, path):
     cur.execute("create index preset_tags_idx on preset_tags (key, value);")
 
 
+def remove_generic_terms(cur):
+    """Remove terms that address generic presets (e.g. shop=*)."""
+    global non_searchable_presets
+
+    cur.execute("select name, add_tags from presets where add_tags like '%\"*\"%'")
+    preset_names = set(non_searchable_presets)
+    for row in cur:
+        tags = json.loads(row[1])
+        if not tags or all(v == '*' for v in tags.values()):
+            preset_names.add(row[0])
+
+    nq = ','.join('?' for n in preset_names)
+    cur.execute(f"delete from preset_terms where preset_name in ({nq})", list(preset_names))
+
+
 def import_translations(cur, path):
     cur.execute("""create table field_tran (
         lang text,
@@ -207,9 +245,12 @@ def import_translations(cur, path):
         def build_fields(lang, data):
             for name, row in data.items():
                 options = row.get('options', {})
-                for k in options:
-                    if isinstance(k, dict):
-                        options[k] = options[k]['title']
+                for k in list(options):
+                    if isinstance(options[k], dict):
+                        if 'title' not in options[k]:
+                            del options[k]
+                        else:
+                            options[k] = options[k]['title']
                 yield (
                     lang, name,
                     row.get('label'),
@@ -245,13 +286,7 @@ def import_translations(cur, path):
             "insert into preset_terms (lang, term, preset_name, score) values (?, ?, ?, ?)",
             build_terms(lang, presets))
 
-    # Clean up indices - commented out since it removes e.g. restaurants.
-    # cur.execute(
-    #     "with t as (select lang, term from preset_terms group by 1, 2 having count(*) > 20) "
-    #     "delete from preset_terms as p "
-    #     "where exists (select * from t where p.lang = t.lang and p.term = t.term) "
-    #     "or (lang not in ('ja', 'zh-CN', 'zh-TW', 'zh-HK') and length(term) <= 2)"
-    # )
+    remove_generic_terms(cur)
 
     cur.execute("create index field_tran_idx on field_tran (field_name)")
     cur.execute("create index preset_tran_idx on preset_tran (preset_name)")

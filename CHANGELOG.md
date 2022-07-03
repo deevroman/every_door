@@ -1,25 +1,71 @@
 # Every Door App Change Log
 
-## 0.5.0
+## 0.7
 
 _Unreleased_
 
+* Storing last used tags only for non-amenities.
+* Removed searching for entrance-related presets.
+* Rewrote both the UI and the model for the `opening_hours` editor.
+
+## 0.6
+
+_Released on 2022-06-23_
+
+* Supporting subway entrances.
+* Long tap on the crosshair did not work in the entrances mode.
+* Button to open an object's history (thanks @GeorgeHoneywood).
+* Non-https URLs failed to open from the editor.
+* Removed generic presets like `shop=*` from the preset chooser.
+* Combo options are sorted by popularity in downloaded data.
+* Combo fields now look the same as radio fields.
+* Fixed geolocation exception on the first run on iOS.
+* Complete Polish (by @strebski) and Spanish translation (by @franco999).
+
+## 0.5
+
+_Released on 2022-06-20_
+
+### Highlights
+
 * Keeping the map big when there's enough space for POI tiles.
-* Fixed type list flicker because of defaults loading slowly.
-* Increased minimum rotation angle to 30° to make disabling it easier.
-* Quick fix for the entrances mode when the map is rotated:
-  not asking for options then.
-* Not asking for a roof shape if there are `building:part`s.
-* Preventing deletion of nodes that are relation members.
-* Not allowing the "address" option on polygonal buildings.
-* Removed the "inactive" button for new non-amenities.
-* Imagery list in Settings was refreshing constantly.
-* Presenting 250 top values for `payment:*` keys.
-* Maxar Premium Imagery is back.
-* OpenStreetMap layer zoom 19 is back.
+* Added Maxar Premium Imagery.
+* When adding multiple objects of the same type,
+  copying tags from the last one.
+* Warning about a possible duplicate when adding a new amenity.
 * Many, many new translations — thanks folks, and thanks to Weblate.
 
-## 0.4.0
+### Editor
+
+* Preventing deletion of nodes that are relation members.
+* Editor pane now shows location even when you cannot move the POI.
+* Removed the "inactive" button for new non-amenities.
+* Addresses from new amenities are included in the chooser.
+* Keeping values with semicolons for `voltage` options.
+* Presenting 250 top values for `payment:*` and `craft` keys.
+
+### Entrances Mode
+
+* Quick fix for the entrances mode when the map is rotated:
+  not asking for options then.
+* Fixed dragging entrances onto the map when the map is rotated.
+* Not asking for a roof shape if there are `building:part`s.
+* Not allowing the "address" option on polygonal buildings.
+* Removed question mark from some types of unaddressed buildings.
+
+### Other
+
+* OpenStreetMap layer zoom 19 is back.
+* Increased minimum rotation angle to 30° to make disabling it easier.
+* Long tap the crosshair button to reset rotation.
+* Fixed type list flicker because of defaults loading slowly.
+* Better ordering for choosing the best preset for an object.
+* Imagery list in Settings was refreshing constantly.
+* Attribution is not rotated with the map now.
+* Labels for U-shaped buildings are positioned on buildings.
+* Temporary (?) option in Settings to disable Google location services.
+
+## 0.4
 
 _Released on 2022-05-22_
 
@@ -63,7 +109,7 @@ _Released on 2022-05-22_
 * Tapping away from a building / entrance form saves the edits.
 * Choose "address" building type to add a building-less address.
 
-## 0.3.0
+## 0.3
 
 _Released on 2022-05-09_
 
@@ -82,7 +128,7 @@ _Released on 2022-05-09_
 * Finally caught the offset issue when dragging entrances onto the map.
 * Fixed offset in numbers on the map.
 
-## 0.2.0
+## 0.2
 
 _Released on 2022-05-03_
 
