@@ -87,6 +87,8 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
               title: loc.fieldHoursOpens,
               columns: 3,
               options: [
+                // TODO: Remove options less than start time, but account for 24h rollover.
+                // TODO: maybe end times dependent on start time range?
                 for (final t in timeDefaults.defaultStartTimes)
                   GridChooserItem(
                     value: t,
@@ -146,8 +148,9 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
           final isOpens = _state != _ChooserState.second;
           result = HoursMinutesChooser(
             big: true,
-            startHour: isOpens ? 0 : (start?.hour ?? -1) + 1,
-            endHour: isOpens ? (end?.hour ?? 25) - 1 : 24,
+            // TODO: bracket hours accounting for 24h rollover?
+            startHour: isOpens ? 0 : 1,
+            endHour: 24,
             onChoose: (value) {
               setState(() {
                 editingHours = false;
@@ -181,10 +184,12 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
             columns: 1,
             options: [
               for (final t in timeDefaults.defaultBreaks)
-                GridChooserItem(
-                  value: t,
-                  label: t.toString(),
-                ),
+                // TODO: what if the list is empty?
+                if (widget.breakParent!.contains(t))
+                  GridChooserItem(
+                    value: t,
+                    label: t.toString(),
+                  ),
             ],
             onChoose: (value) {
               setState(() {
@@ -202,13 +207,18 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
             },
           );
         } else {
+          final parentIntervalGood =
+              widget.breakParent!.start < widget.breakParent!.end;
           final isOpens = _state != _ChooserState.second;
           result = HoursMinutesChooser(
             key: ValueKey(_state),
-            title: isOpens ? 'Break' : 'Break $start-',
+            title: isOpens
+                ? loc.fieldHoursBreak
+                : '${loc.fieldHoursBreak} $start-',
             big: false,
-            startHour: start?.hour ?? widget.breakParent!.start.hour + 1,
-            endHour: widget.breakParent!.end.hour - 1,
+            startHour: start?.hour ??
+                (parentIntervalGood ? widget.breakParent!.start.hour + 1 : 0),
+            endHour: parentIntervalGood ? widget.breakParent!.end.hour - 1 : 24,
             onChoose: (value) {
               if (isOpens) {
                 setState(() {
@@ -500,30 +510,31 @@ class TimeDefaults {
     defaultStartTimes = _addFromAround(
       kInitialStartTimes.map((s) => StringTime(s)),
       starts.mostOccurentItems(cutoff: 2).map((s) => StringTime(s)),
-      8,
+      9,
     );
     defaultEndTimes = _addFromAround(
       kInitialEndTimes.map((s) => StringTime(s)),
       ends.mostOccurentItems(cutoff: 2).map((s) => StringTime(s)),
-      8,
+      9,
     );
     defaultBreaks = _addFromAround(
       kInitialBreaks.map((s) => HoursInterval.parse(s)),
       breaks.mostOccurentItems(cutoff: 2).map((s) => HoursInterval.parse(s)),
-      8,
+      4,
     );
   }
 
   List<T> _addFromAround<T>(
-      Iterable<T> base, Iterable<T> around, int baseCount) {
+      Iterable<T> base, Iterable<T> around, int targetCount, [int? aroundCount]) {
+    aroundCount ??= (targetCount / 4).ceil();
     final timesToAdd = base
-        .take(baseCount)
+        .take(targetCount - aroundCount)
         .followedBy(around)
-        .followedBy(base.skip(baseCount));
+        .followedBy(base.skip(targetCount - aroundCount));
     final resultSet = <T>{};
     for (final item in timesToAdd) {
       resultSet.add(item);
-      if (resultSet.length >= base.length) break;
+      if (resultSet.length >= targetCount) break;
     }
     final result = List.of(resultSet);
     result.sort();
