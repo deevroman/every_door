@@ -35,7 +35,7 @@ jobs:
           java-version: '11'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '2.16.x'
+          flutter-version: '2.10.5'
       
       - env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
