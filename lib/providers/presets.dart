@@ -34,6 +34,7 @@ class PresetProvider {
   late final LocationMatcher locationMatcher;
   bool ready = false;
   final Ref _ref;
+  final Map<String, PresetField> _fieldCache = {};
 
   PresetProvider(this._ref) {
     initMatcher();
@@ -142,20 +143,27 @@ class PresetProvider {
       bool includeNSI = true,
       Locale? locale,
       LatLng? location}) async {
+    final terms = query
+        .split(' ')
+        .where((s) => s.length >= 2)
+        .take(3)
+        .map((s) => normalizeString(s));
+    if (terms.isEmpty) return [];
+
     if (!ready) await _waitUntilReady();
     final langCTE = _localeCTE(locale);
     final isAreaClause = isArea ? 'where can_area = 1' : '';
+    final termsClause = terms.map((_) => 'term like ?').join(' or ');
     final sql = '''
     with $langCTE
     , found as (
-      select preset_name, max(score) as score
+      select preset_name, max(score) as score, group_concat(term) as terms
       from preset_terms
-      where term like ?
+      where ($termsClause)
       and lang in (select lang from langs)
       group by preset_name
-      order by score desc, min(length(term))
     )
-    select p.*, t.name as loc_name, lscore
+    select p.*, t.name as loc_name, lscore, terms
     from presets p
     inner join found on found.preset_name = p.name
     left join preset_tran t on t.preset_name = p.name
@@ -163,7 +171,8 @@ class PresetProvider {
     $isAreaClause
     order by score desc, lscore;
     ''';
-    final results = await _db!.rawQuery(sql, [normalizeString(query) + '%']);
+    final results = await _db!.rawQuery(sql, terms.map((t) => '$t%').toList());
+
     final presets = <Preset>[];
     if (includeNSI) {
       List<Preset> nsiResults =
@@ -179,6 +188,12 @@ class PresetProvider {
 
     final seenPresets = <String>[];
     for (final row in results) {
+      // Check that both terms are present.
+      final foundTerms = (row['terms'] as String).split(',');
+      if (!terms.every(
+          (term) => foundTerms.any((element) => element.startsWith(term))))
+        continue;
+
       if (seenPresets.contains(row['name'])) continue;
       seenPresets.add(row['name'] as String);
       presets.add(Preset.fromJson(row));
@@ -338,8 +353,17 @@ class PresetProvider {
       if (seenFields.contains(row['name'])) continue;
       if (row['name'] == 'opening_hours/covid19') continue;
       seenFields.add(row['name'] as String);
-      final options = await _getComboOptions(row);
-      final field = fieldFromJson(row, options: options);
+
+      // Either build a field, or restore it from a cache.
+      PresetField field;
+      if (_fieldCache.containsKey(row['name'])) {
+        field = _fieldCache[row['name']]!;
+      } else {
+        final options = await _getComboOptions(row);
+        field = fieldFromJson(row, options: options);
+        _fieldCache[row['name'] as String] = field;
+      }
+
       // query options if needed
       if (row['required'] == 1) {
         fields.add(field);
@@ -367,6 +391,12 @@ class PresetProvider {
 
   Future<Map<String, PresetField>> _getFields(
       List<String> names, Locale? locale) async {
+    // There's a chance all the fields were cached.
+    final nonCachedNames =
+        names.where((element) => !_fieldCache.containsKey(element)).toList();
+    if (nonCachedNames.isEmpty)
+      return {for (final name in names) name: _fieldCache[name]!};
+
     if (!ready) await _waitUntilReady();
     final langCTE = _localeCTE(locale);
     final params = List.filled(names.length, '?').join(',');
@@ -384,13 +414,23 @@ class PresetProvider {
     order by lscore
     ''';
     final results = await _db!.rawQuery(sql, names);
+
     Map<String, PresetField> fields = {};
     final seenFields = <String>{};
     for (final row in results) {
       if (seenFields.contains(row['name'])) continue;
       seenFields.add(row['name'] as String);
-      final options = await _getComboOptions(row);
-      final field = fieldFromJson(row, options: options);
+
+      // Either build a field, or restore it from a cache.
+      PresetField field;
+      if (_fieldCache.containsKey(row['name'])) {
+        field = _fieldCache[row['name']]!;
+      } else {
+        final options = await _getComboOptions(row);
+        field = fieldFromJson(row, options: options);
+        _fieldCache[row['name'] as String] = field;
+      }
+
       fields[row['name'] as String] = field;
     }
     return fields;
