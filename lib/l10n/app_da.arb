@@ -677,5 +677,119 @@
         "example": "71"
       }
     }
+  },
+  "aboutViewLog": "Systemlog",
+  "@aboutViewLog": {
+    "description": "Button title to open the log view page."
+  },
+  "aboutProjectWebsite": "Projektets hjemmeside",
+  "@aboutProjectWebsite": {
+    "description": "Button title to open the every-door.app website."
+  },
+  "aboutSourceCode": "Kildekode",
+  "@aboutSourceCode": {
+    "description": "Button title to open the repository on GitHub."
+  },
+  "aboutHelpImprove": "Hjælp med at forbedre {appTitle}",
+  "@aboutHelpImprove": {
+    "description": "Title for the Help improve section on the About page.",
+    "placeholders": {
+      "appTitle": {
+        "type": "String",
+        "description": "Name of app.",
+        "example": "Every Door"
+      }
+    }
+  },
+  "aboutReportIssue": "Rapportér et problem",
+  "@aboutReportIssue": {
+    "description": "Button title to open the app's GitHub issue page."
+  },
+  "aboutFAQ": "FAQ",
+  "@aboutFAQ": {
+    "description": "Title for the FAQ section on the About page."
+  },
+  "aboutLinks": "Links",
+  "@aboutLinks": {
+    "description": "Title for the links section on the About page."
+  },
+  "aboutVersionHistory": "Versionshistorik",
+  "@aboutVersionHistory": {
+    "description": "Button title to open GitHub releases page."
+  },
+  "settingsAbout": "Om",
+  "@settingsAbout": {
+    "description": "Title for the About section in settings."
+  },
+  "aboutInstalledVersion": "Installeret version",
+  "@aboutInstalledVersion": {
+    "description": "Button description for installed app version."
+  },
+  "aboutOnGitHub": "på GitHub",
+  "@aboutOnGitHub": {
+    "description": "Button description to indicate a link to GitHub."
+  },
+  "aboutLicense": "Licens",
+  "@aboutLicense": {
+    "description": "Button title to open the app's license on GitHub."
+  },
+  "aboutHelpTranslate": "Hjælp med at oversætte",
+  "@aboutHelpTranslate": {
+    "description": "Button title to open the app's Weblate page."
+  },
+  "aboutOnWeblate": "på Weblate",
+  "@aboutOnWeblate": {
+    "description": "Button description to indicate a link to Weblate."
+  },
+  "loadingTooMuchDataTitle": "For mange data",
+  "@loadingTooMuchDataTitle": {
+    "description": "Title for a warning alert when there's too much data downloaded."
+  },
+  "loadingTooMuchData": "Ryd downloadede data fra Indstillinger for at gøre editoren hurtigere.",
+  "@loadingTooMuchData": {
+    "description": "Message of a warning alert when there's too much data downloaded."
+  },
+  "fieldHoursAsText": "Som tekst",
+  "@fieldHoursAsText": {
+    "description": "Button title to open the raw opening hours editor."
+  },
+  "fieldHoursSpecificDays": "Specifik dato",
+  "@fieldHoursSpecificDays": {
+    "description": "Button title for selectors like Dec 31."
+  },
+  "fieldHoursClosed": "Lukket",
+  "@fieldHoursClosed": {
+    "description": "Switch tile label for making a schedule closed, e.g. for PH off."
+  },
+  "fieldHoursPublicHolidays": "Helligdage",
+  "@fieldHoursPublicHolidays": {
+    "description": "Card title for the PH (public holidays) selector."
+  },
+  "dataDownloadFailed": "Download mislykkedes",
+  "@dataDownloadFailed": {
+    "description": "Alert title for the error happened during a data download."
+  },
+  "fieldHoursHour": "Time",
+  "@fieldHoursHour": {
+    "description": "Label for the hour chooser."
+  },
+  "dataDownloadedCount": "{count,plural, =1{Downloadede {count} element.}, =few{Downloadede {count} elementer.}, =other{Downloadede {count} elementer.}}",
+  "@dataDownloadedCount": {
+    "description": "Alert contents when we've successfully downloaded some data.",
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dataDownloadSuccessful": "Download lykkedes",
+  "@dataDownloadSuccessful": {
+    "description": "Alert title for when the data was successfully downloaded."
+  },
+  "fieldHoursNumberedWeekday": "\"Sidste mandag\"",
+  "@fieldHoursNumberedWeekday": {
+    "description": "Button title for selectors like Mo[-1], keep it short - maybe with an example."
+  },
+  "fieldHoursMinute": "Minut",
+  "@fieldHoursMinute": {
+    "description": "Label for the minute chooser."
   }
 }

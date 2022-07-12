@@ -81,7 +81,6 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
         );
       } else {
         if (!editingHours) {
-          // TODO: clock icon for switching to hours-minutes chooser.
           if (_state != _ChooserState.second) {
             result = GridChooser<StringTime>(
               title: loc.fieldHoursOpens,
@@ -185,11 +184,11 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
             options: [
               for (final t in timeDefaults.defaultBreaks)
                 // TODO: what if the list is empty?
-                if (widget.breakParent!.contains(t))
-                  GridChooserItem(
-                    value: t,
-                    label: t.toString(),
-                  ),
+                // if (widget.breakParent!.contains(t))
+                GridChooserItem(
+                  value: t,
+                  label: t.toString(),
+                ),
             ],
             onChoose: (value) {
               setState(() {
@@ -330,10 +329,10 @@ class _HoursMinutesChooserState extends State<HoursMinutesChooser> {
     }
 
     final loc = AppLocalizations.of(context)!;
-    // TODO: localize
-    final localTitle = hour == null ? 'Hour' : '$hour: Minute';
+    final localTitle =
+        hour == null ? loc.fieldHoursHour : '$hour: ${loc.fieldHoursMinute}';
     return GridChooser<String>(
-      title: '${widget.title} $localTitle'.trimLeft(),
+      title: '${widget.title ?? ""} $localTitle'.trimLeft(),
       columns: 4,
       options: options,
       transpose: hour == null,
@@ -371,7 +370,6 @@ class GridChooser<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: adjust font size of items
     final rows = transpose ? columns : (options.length / columns).ceil();
     final double baseSize = !big ? 14.0 : 18.0;
     return Column(
@@ -482,11 +480,12 @@ class TimeDefaults {
   late List<StringTime> defaultEndTimes;
   late List<HoursInterval> defaultBreaks;
 
-  TimeDefaults() {
-    updateFromAround([]);
+  TimeDefaults({List<String>? around, Iterable<HoursFragment>? fragments}) {
+    updateFromAround(around ?? [], fragments);
   }
 
-  updateFromAround(List<String> hoursAround) {
+  updateFromAround(List<String> hoursAround,
+      [Iterable<HoursFragment>? fragments]) {
     final kStart = RegExp(r'(?:^|Mo|Tu|We|Th|Fr|Sa|Su|;)\s*(\d?\d:\d\d)-');
     final kEnd = RegExp(r'-(\d?\d:\d\d)(?:$|;)');
     final kBreak = RegExp(r'-(\d?\d:\d\d),\s*(\d?\d:\d\d)-');
@@ -507,25 +506,36 @@ class TimeDefaults {
       }
     }
 
+    if (fragments != null) {
+      for (final fragment in fragments) {
+        if (fragment.active && fragment.interval != null) {
+          starts.add(fragment.interval!.start.toString(), 10);
+          ends.add(fragment.interval!.end.toString(), 10);
+          breaks.addAll(fragment.breaks.map((b) => b.toString()), 10);
+        }
+      }
+    }
+
     defaultStartTimes = _addFromAround(
       kInitialStartTimes.map((s) => StringTime(s)),
-      starts.mostOccurentItems(cutoff: 2).map((s) => StringTime(s)),
+      starts.mostOccurentItems(cutoff: 4).map((s) => StringTime(s)),
       9,
     );
     defaultEndTimes = _addFromAround(
       kInitialEndTimes.map((s) => StringTime(s)),
-      ends.mostOccurentItems(cutoff: 2).map((s) => StringTime(s)),
+      ends.mostOccurentItems(cutoff: 4).map((s) => StringTime(s)),
       9,
     );
     defaultBreaks = _addFromAround(
       kInitialBreaks.map((s) => HoursInterval.parse(s)),
-      breaks.mostOccurentItems(cutoff: 2).map((s) => HoursInterval.parse(s)),
+      breaks.mostOccurentItems(cutoff: 3).map((s) => HoursInterval.parse(s)),
       4,
     );
   }
 
   List<T> _addFromAround<T>(
-      Iterable<T> base, Iterable<T> around, int targetCount, [int? aroundCount]) {
+      Iterable<T> base, Iterable<T> around, int targetCount,
+      [int? aroundCount]) {
     aroundCount ??= (targetCount / 4).ceil();
     final timesToAdd = base
         .take(targetCount - aroundCount)

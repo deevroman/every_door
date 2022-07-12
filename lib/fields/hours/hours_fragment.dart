@@ -50,6 +50,7 @@ class _HoursFragmentEditorState extends State<HoursFragmentEditor> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.onDelete != null)
           Row(
@@ -66,7 +67,7 @@ class _HoursFragmentEditorState extends State<HoursFragmentEditor> {
           _callOnChange(weekdays: newDays);
         }),
         SwitchListTile(
-          title: Text('Closed'), // TODO: translate
+          title: Text(loc.fieldHoursClosed),
           value: isOff,
           onChanged: (value) {
             _callOnChange(isOff: value);
@@ -85,7 +86,6 @@ class _HoursFragmentEditorState extends State<HoursFragmentEditor> {
           // Breaks
           for (int i = 0; i < widget.fragment.breaks.length; i++)
             Row(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 ChooserIntervalField(
@@ -124,13 +124,16 @@ class _HoursFragmentEditorState extends State<HoursFragmentEditor> {
                 },
               ),
             if (!addingBreak)
-              MaterialButton(
-                onPressed: () async {
-                  setState(() {
-                    addingBreak = true;
-                  });
-                },
-                child: Text(loc.fieldHoursAddBreak),
+              SizedBox(
+                width: double.infinity,
+                child: MaterialButton(
+                  onPressed: () async {
+                    setState(() {
+                      addingBreak = true;
+                    });
+                  },
+                  child: Text(loc.fieldHoursAddBreak),
+                ),
               ),
           ],
         ],

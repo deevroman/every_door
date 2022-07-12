@@ -1,6 +1,8 @@
+import 'package:every_door/helpers/counter.dart';
 import 'package:every_door/helpers/equirectangular.dart';
 import 'package:every_door/helpers/circle_bounds.dart';
 import 'package:every_door/helpers/good_tags.dart';
+import 'package:every_door/helpers/location_object.dart';
 import 'package:every_door/helpers/normalizer.dart';
 import 'package:every_door/helpers/payment_tags.dart';
 import 'package:every_door/models/address.dart';
@@ -25,6 +27,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proximity_hash/proximity_hash.dart';
 import 'package:sqflite/utils/utils.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final osmDataProvider = ChangeNotifierProvider((ref) => OsmDataHelper(ref));
 
@@ -32,6 +35,7 @@ class OsmDataHelper extends ChangeNotifier {
   final Ref _ref;
   int _length = 0;
   int _obsoleteLength = 0;
+  Set<StreetAddress> _addressesWithFloors = {};
 
   OsmDataHelper(this._ref) {
     _updateLength();
@@ -204,6 +208,43 @@ class OsmDataHelper extends ChangeNotifier {
     return results;
   }
 
+  Future updateAddressesWithFloors() async {
+    _addressesWithFloors.clear();
+
+    final database = await _ref.read(databaseProvider).database;
+    final rows = await database.query(OsmElement.kTableName,
+        where: "tags like '%\"addr:floor\"%' or tags like '%\"level\"%'");
+    final elements = rows.map((row) => OsmElement.fromJson(row)).toList();
+
+    final changedElements = _ref
+        .read(changesProvider)
+        .all()
+        .where((element) => element['addr:housenumber'] != null)
+        .map((e) => e.toElement(newId: -1));
+    elements.addAll(changedElements);
+
+    final floors = <StreetAddress, Set<Floor>>{};
+    for (final el in elements) {
+      final addr = StreetAddress.fromTags(el.tags);
+      if (addr.isEmpty) continue;
+      final newFloors = MultiFloor.fromTags(el.tags);
+      if (newFloors.isNotEmpty) {
+        if (floors.containsKey(addr))
+          floors[addr]!.addAll(newFloors.floors);
+        else
+          floors[addr] = Set.of(newFloors.floors);
+      }
+    }
+
+    _addressesWithFloors = floors.entries
+        .where((e) => e.value.length >= 2)
+        .map((e) => e.key)
+        .toSet();
+  }
+
+  bool hasMultipleFloors(StreetAddress address) =>
+      _addressesWithFloors.contains(address);
+
   Future<List<Floor>> getFloorsAround(LatLng location,
       [StreetAddress? address]) async {
     final database = await _ref.read(databaseProvider).database;
@@ -255,21 +296,43 @@ class OsmDataHelper extends ChangeNotifier {
     );
 
     // Keep only amenities with opening_hours.
-    final elements = rows
+    final elements = LocationObjectSet(rows
         .map((row) => OsmElement.fromJson(row))
         .where((element) => element.tags.containsKey('opening_hours'))
-        .toList();
+        .map((e) => LocationObject(e.center!, e.tags['opening_hours']!)));
 
-    // Sort by distance and keep the few closest amenities.
+    elements.sortByDistance(location, unique: true);
+    return elements.take(limit);
+  }
+
+  Future<List<String>> getPostcodesAround(LatLng location,
+      {int limit = 3}) async {
+    final database = await _ref.read(databaseProvider).database;
+    final hashes = createGeohashes(location.latitude, location.longitude,
+        kVisibilityRadius.toDouble(), kGeohashPrecision);
+    final placeholders = List.generate(hashes.length, (index) => "?").join(",");
+    final rows = await database.query(
+      OsmElement.kTableName,
+      where: "geohash in ($placeholders) and tags like '%addr:postcode%'",
+      whereArgs: hashes,
+    );
+
+    // Keep only amenities with opening_hours.
+    final elements = LocationObjectSet(rows
+        .map((row) => OsmElement.fromJson(row))
+        .where((element) => element.tags.containsKey('addr:postcode'))
+        .map((e) => LocationObject(e.center!, e.tags['addr:postcode']!)));
+
+    // Add all new changes with postcodes
     const distance = DistanceEquirectangular();
-    elements.sort((a, b) =>
-        distance(location, a.center!).compareTo(distance(location, b.center!)));
-    if (elements.length > limit) elements.removeRange(limit, elements.length);
+    final changedElements = _ref.read(changesProvider).all().where((element) =>
+        distance(location, element.location) <= kVisibilityRadius &&
+        element['addr:postcode'] != null);
+    elements.addAll(changedElements
+        .map((e) => LocationObject(e.location, e['addr:postcode']!)));
 
-    return elements
-        .map((e) => e.tags['opening_hours'])
-        .whereType<String>()
-        .toList();
+    elements.sortByDistance(location, unique: true);
+    return elements.take(limit);
   }
 
   Future<Set<String>> getCardPaymentOptions(LatLng location) async {
@@ -295,24 +358,20 @@ class OsmDataHelper extends ChangeNotifier {
 
     // Count all payment:XXX=yes tags.
     int count = 0;
-    final tagCount = <String, int>{};
+    final tagCount = Counter<String>();
     for (final tags in elementTags) {
       final paymentTags = tags.entries
           .where((tag) => tag.value == 'yes' && kCardOptions.contains(tag.key))
           .map((e) => e.key);
       if (paymentTags.isNotEmpty) {
         count++;
-        for (var key in paymentTags) {
-          tagCount[key] = (tagCount[key] ?? 0) + 1;
-        }
+        tagCount.addAll(paymentTags);
       }
     }
 
     // List all payment options that appear at least on 1/3 of objects.
-    final minCount = (count / 3).ceil();
-    final result = tagCount.entries
-        .where((e) => e.value >= minCount && e.value >= 2)
-        .map((e) => e.key)
+    final result = tagCount
+        .mostOccurentItems(cutoff: count < 6 ? 2 : (count / 3).ceil())
         .toSet();
 
     // If no results, use the default.
@@ -345,9 +404,11 @@ class OsmDataHelper extends ChangeNotifier {
       where: "geohash in ($placeholders) and (tags like '%$mainKey%')",
       whereArgs: hashes,
     );
-    final elements = _wrapInChange(rows
-        .map((row) => OsmElement.fromJson(row))
-        .where((e) => e.tags[mainKey] == amenity[mainKey]), false);
+    final elements = _wrapInChange(
+        rows
+            .map((row) => OsmElement.fromJson(row))
+            .where((e) => e.tags[mainKey] == amenity[mainKey]),
+        false);
 
     // Which names are we looking for.
     final names = <String>{};
@@ -402,8 +463,7 @@ class OsmDataHelper extends ChangeNotifier {
         });
       } else {
         final v = element.tags[key];
-        if (v != null)
-          counter[v] = (counter[v] ?? 0) + 1;
+        if (v != null) counter[v] = (counter[v] ?? 0) + 1;
       }
     }
 
@@ -411,7 +471,8 @@ class OsmDataHelper extends ChangeNotifier {
     return counter;
   }
 
-  Future<List<OsmChange>> downloadMap(LatLngBounds bounds) async {
+  Future<List<OsmChange>> downloadMap(LatLngBounds bounds,
+      {AppLocalizations? loc}) async {
     _ref.read(apiStatusProvider.notifier).state = ApiStatus.downloading;
     try {
       final api = _ref.read(osmApiProvider);
@@ -421,8 +482,12 @@ class OsmDataHelper extends ChangeNotifier {
       _ref.read(apiStatusProvider.notifier).state = ApiStatus.updatingDatabase;
       await storeElements(elements, bounds);
       await _ref.read(roadNameProvider).storeNames(roadNames);
-      AlertController.show('Download successful',
-          'Downloaded ${elements.length} amenities.', TypeAlert.success);
+      updateAddressesWithFloors();
+      AlertController.show(
+          loc?.dataDownloadSuccessful ?? 'Download successful',
+          loc?.dataDownloadedCount(elements.length) ??
+              'Downloaded ${elements.length} amenities.',
+          TypeAlert.success);
 
       // No need to wrap in changes, since we don't use the result anyway.
       // return _wrapInChange(elements);
@@ -432,14 +497,18 @@ class OsmDataHelper extends ChangeNotifier {
     }
   }
 
-  Future<List<OsmChange>> downloadAround(LatLng location) async {
+  Future<List<OsmChange>> downloadAround(LatLng location,
+      {AppLocalizations? loc}) async {
     try {
-      return await downloadMap(boundsFromRadius(location, kBigRadius));
+      return await downloadMap(boundsFromRadius(location, kBigRadius),
+          loc: loc);
     } on Exception {
       try {
-        return await downloadMap(boundsFromRadius(location, kSmallRadius));
+        return await downloadMap(boundsFromRadius(location, kSmallRadius),
+            loc: loc);
       } on Exception catch (e) {
-        AlertController.show('Download failed', e.toString(), TypeAlert.error);
+        AlertController.show(loc?.dataDownloadFailed ?? 'Download failed',
+            e.toString(), TypeAlert.error);
         return [];
       }
     }

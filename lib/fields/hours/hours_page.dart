@@ -1,4 +1,5 @@
 import 'package:every_door/constants.dart';
+import 'package:every_door/fields/hours/days_editors.dart';
 import 'package:every_door/models/amenity.dart';
 import 'package:every_door/providers/osm_data.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class OpeningHoursPage extends ConsumerStatefulWidget {
 class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
   late HoursData hours;
   final timeDefaults = TimeDefaults();
+  List<String> _cachedAround = [];
   final ScrollController _scrollController = ScrollController();
   bool isRaw = false;
 
@@ -48,9 +50,14 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
   _findDefaultIntervals() async {
     if (widget.element == null) return;
     final data = ref.read(osmDataProvider);
-    timeDefaults.updateFromAround(
-        await data.getOpeningHoursAround(widget.element!.location, limit: 50));
+    _cachedAround =
+        await data.getOpeningHoursAround(widget.element!.location, limit: 50);
+    _updateTimeDefaults();
     setState(() {});
+  }
+
+  _updateTimeDefaults() {
+    timeDefaults.updateFromAround(_cachedAround, hours.fragments);
   }
 
   @override
@@ -103,9 +110,15 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
     );
   }
 
+  int _getInactiveCardPosition() {
+    // We don't care about inactive fragments other than weekdays.
+    return hours.fragments.indexWhere(
+        (fragment) => !fragment.active && fragment.weekdays is Weekdays);
+  }
+
   _updateInactiveCard() {
     if (isRaw) return;
-    int pos = hours.fragments.indexWhere((fragment) => !fragment.active);
+    int pos = _getInactiveCardPosition();
     if (hours.fragments.isEmpty) {
       // No fragments — add a new empty one.
       setState(() {
@@ -123,22 +136,30 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
     } else {
       // The last one is inactive, but maybe we need to remove it or update weekdays.
       final inactive = hours.fragments[pos];
-      if (inactive.weekdays is Weekdays ||
-          inactive.weekdays is PublicHolidays) {
+      if (inactive.weekdays is Weekdays) {
         final missingDays = hours.getMissingWeekdays();
-        if (inactive.weekdays != missingDays) {
+        if (missingDays.isEmpty) {
           setState(() {
-            if (missingDays.isEmpty)
-              hours.fragments.removeAt(pos);
-            else
-              hours.fragments[pos] = inactive.copyWith(weekdays: missingDays);
+            hours.fragments.removeAt(pos);
           });
         }
       }
     }
   }
 
+  _addInactiveFragment(DaysRange range) {
+    final newFragment = HoursFragment.inactive(range);
+    int inactivePos = _getInactiveCardPosition();
+    setState(() {
+      if (inactivePos <= 0)
+        hours.fragments.add(newFragment);
+      else
+        hours.fragments.insert(inactivePos, newFragment);
+    });
+  }
+
   Widget buildFragmentsEditor(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return ListView(
       controller: _scrollController,
       children: [
@@ -146,12 +167,12 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // TODO: style
               ElevatedButton(
-                // TODO: localize
-                child: Text('As text', style: TextStyle(fontSize: 20.0)),
+                child: Text(loc.fieldHoursAsText,
+                    style: TextStyle(fontSize: 20.0)),
                 onPressed: () {
                   setState(() {
+                    hours.hours = hours.buildHours();
                     isRaw = true;
                   });
                 },
@@ -176,28 +197,17 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
             child: HoursFragmentEditor(
               fragment: hours.fragments[i],
               timeDefaults: timeDefaults,
-              onDelete: i == 0 || !hours.fragments[i].active
+              onDelete: i == 0
                   ? null
                   : () {
                       setState(() {
-                        final rem = hours.fragments.removeAt(i);
-                        print('Removed $rem at $i');
-                        for (int k = 0; k < hours.fragments.length; k++)
-                          print('Fragment $k: ${hours.fragments[k]}');
-
-                        // TODO: this inactive card copies interval from the removed fragment.
+                        hours.fragments.removeAt(i);
                         _updateInactiveCard();
-                        print('After reshuffling:');
-                        for (int k = 0; k < hours.fragments.length; k++)
-                          print('Fragment $k: ${hours.fragments[k]}');
                       });
                     },
               onChange: (newFragment) {
                 setState(() {
                   hours.fragments[i] = newFragment;
-                  print('Changed at $i to $newFragment');
-                  for (int k = 0; k < hours.fragments.length; k++)
-                    print('Fragment $k: ${hours.fragments[k]}');
                   // Remove weekdays from other fragments.
                   for (int j = 0; j < hours.fragments.length; j++) {
                     if (i != j) {
@@ -213,15 +223,45 @@ class _OpeningHoursPageState extends ConsumerState<OpeningHoursPage> {
                       }
                     }
                   }
+                  _updateTimeDefaults();
                   _updateInactiveCard();
-                  print('After reshuffling:');
-                  for (int k = 0; k < hours.fragments.length; k++)
-                    print('Fragment $k: ${hours.fragments[k]}');
                 });
                 return true;
               },
             ),
           ),
+        Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10.0,
+            children: [
+              ElevatedButton(
+                child: Text(loc.fieldHoursPublicHolidays,
+                    style: TextStyle(fontSize: 18.0)),
+                onPressed: () {
+                  _addInactiveFragment(PublicHolidays());
+                },
+              ),
+              ElevatedButton(
+                child: Text(loc.fieldHoursNumberedWeekday,
+                    style: TextStyle(fontSize: 18.0)),
+                onPressed: () {
+                  _addInactiveFragment(NumberedWeekday(0, {}));
+                },
+              ),
+              ElevatedButton(
+                child: Text(loc.fieldHoursSpecificDays,
+                    style: TextStyle(fontSize: 18.0)),
+                onPressed: () async {
+                  final date = await SpecificDaysPanel.pickDate(context);
+                  if (date != null) {
+                    _addInactiveFragment(SpecificDays({date}));
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
         if (hours.fragments.length >= 2) SizedBox(height: 80.0),
       ],
     );

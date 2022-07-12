@@ -4,6 +4,7 @@ import 'package:every_door/providers/changes.dart';
 import 'package:every_door/providers/geolocation.dart';
 import 'package:every_door/providers/location.dart';
 import 'package:every_door/providers/osm_auth.dart';
+import 'package:every_door/providers/osm_data.dart';
 import 'package:every_door/providers/presets.dart';
 import 'package:every_door/screens/browser.dart';
 import 'package:flutter/foundation.dart' show compute;
@@ -15,6 +16,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:country_coder/country_coder.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoadingPage extends ConsumerStatefulWidget {
   @override
@@ -23,6 +25,7 @@ class LoadingPage extends ConsumerStatefulWidget {
 
 class _LoadingPageState extends ConsumerState<LoadingPage> {
   String? message;
+  static const kPrefLastSizeWarning = 'last_size_warning';
 
   Future doInit() async {
     final loc = AppLocalizations.of(context)!;
@@ -55,6 +58,9 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
       AlertController.show(loc.loadingChangesFailed, error, TypeAlert.error);
     }
 
+    // Update floors in the background.
+    ref.read(osmDataProvider).updateAddressesWithFloors();
+
     // Acquire user location.
     setState(() {
       message = loc.loadingLocation;
@@ -63,6 +69,18 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
     LatLng? location = ref.read(geolocationProvider);
     if (location != null) {
       ref.read(effectiveLocationProvider.notifier).set(location);
+    }
+
+    // Alert if there are too many changes loaded.
+    final needSizeAlert =
+        ref.read(osmDataProvider).length >= kMinElementsForWarning;
+    if (needSizeAlert) {
+      final prefs = await SharedPreferences.getInstance();
+      if (DateTime.now().day != prefs.getInt(kPrefLastSizeWarning)) {
+        await prefs.setInt(kPrefLastSizeWarning, DateTime.now().day);
+        AlertController.show(loc.loadingTooMuchDataTitle,
+            loc.loadingTooMuchData, TypeAlert.warning);
+      }
     }
 
     // Finally switch to the monitor page.

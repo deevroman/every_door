@@ -1,23 +1,55 @@
 # Every Door App Change Log
 
-## 0.7
+## 0.8
 
 _Unreleased_
 
+### Opening Hours Editor
+
+* Could not mark an hours fragment as `off`.
+* When switching to the raw hours editor, the value was not updated.
+* An inactive `PH` interval is no longer added by default.
+
+## 0.7
+
+_Released on 2022-07-11_
+
+### Highlights
+
 * Rewrote both the UI and the model for the `opening_hours` editor.
+* New About page (thanks @GeorgeHoneywood).
+* Moved ATM, vending machines and parcel lockers to micromapping.
+* Added indication for payment types, missing floor, and wheelchair
+  accessibility to POI tiles.
+
+### Editor
+
+* Field definitions are cached for faster loading.
 * Storing last used tags only for non-amenities.
+* Storing last used tags for entrances too.
 * Removed searching for entrance-related presets.
 * Fixed losing input focus on duplicate warning.
+* Lowercase input fields for colours and some other tags.
+* You can use any keys in the tags panel, not just popular.
+* Fixed multi-word query strings when searching for a preset.
+* NSI suggestions for micromapping objects.
+
+### Addresses
+
 * Option to type a street name by hand.
 * House names support.
 * `addr:city` was removed when editing an address.
 * Support for multiple floors for an amenity.
-* Lowercase input fields for colours and some other tags.
-* New About page (thanks @GeorgeHoneywood).
+* Added `addr:postcode` editor to buildings.
+
+### Other
+
 * Buildings in relations did not have the `roof:shape` chooser.
-* You can use any tags in the tags panel, not just popular.
-* Fixed multi-word query strings when searching for a preset.
-* Field definitions are cached for faster loading.
+* A warning when you've downloaded too much elements.
+* Changes are split in groups for uploading if possible.
+* Added a hint on how to undo a change.
+* Complete Ukrainian (by T.H.), Chinese Simplified (by Oil\_Station),
+  and Basque (by Gari Araolaza) translations.
 
 ## 0.6
 

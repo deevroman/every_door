@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' show Colors, TextStyle;
 
 const kAppTitle = 'Every Door';
-const kAppVersion = '0.6'; // Also used for presets.db versioning
+const kAppVersion = '0.7'; // Also used for presets.db versioning
 
 const kDefaultLocation = <double>[59.94, 30.39];
 const kDatabaseName = 'every_door.db';
@@ -32,6 +32,8 @@ const kSlowDownGPS = true; // skip location changes that are too small to regist
 const kMicromappingTapZoom = 19.0; // how much to zoom in when tapping a bunch of elements in micromapping
 const kRotationThreshold = 30.0; // degrees, for snapping to zero rotation
 const kManualOption = '✍️'; // Emoji icon for entering values by hand
+const kMinElementsForWarning = 20000; // Alerting user when they have that many elements downloaded
+const kChangesetSplitGap = 0.02; // Decimal degrees, min distance between groups of changes
 
 // Should be exactly 8 lines in both lists.
 const kDefaultPresets = [

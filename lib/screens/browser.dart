@@ -9,6 +9,7 @@ import 'package:every_door/providers/location.dart';
 import 'package:every_door/providers/need_update.dart';
 import 'package:every_door/providers/osm_api.dart';
 import 'package:every_door/providers/osm_data.dart';
+import 'package:every_door/providers/presets.dart';
 import 'package:every_door/screens/editor/map_chooser.dart';
 import 'package:every_door/screens/modes/entrances.dart';
 import 'package:every_door/screens/modes/poi_list.dart';
@@ -70,10 +71,12 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
     }
   }
 
-  downloadAmenities() async {
+  downloadAmenities(BuildContext context) async {
     final location = ref.read(effectiveLocationProvider);
     final provider = ref.read(osmDataProvider);
-    await provider.downloadAround(location);
+    final loc = AppLocalizations.of(context)!;
+    await provider.downloadAround(location, loc: loc);
+    ref.read(presetProvider).clearFieldCache();
     updateAreaStatus();
     ref.read(needMapUpdateProvider).trigger();
   }
@@ -84,6 +87,10 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
 
     ref.listen(effectiveLocationProvider, (_, LatLng next) {
       updateAreaStatus();
+    });
+
+    ref.listen(editorModeProvider, (_, next) {
+      ref.read(microZoomedInProvider.state).state = null;
     });
 
     final screenSize = MediaQuery.of(context).size;
@@ -174,7 +181,7 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
           ),
         ),
         onTap: () {
-          downloadAmenities();
+          downloadAmenities(context);
         },
       );
     return null;
