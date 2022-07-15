@@ -20,7 +20,7 @@ jobs:
         with:
           flutter-version: '2.10.5'
       - run: flutter config --no-analytics
-      - run: flutter upgrage
+      - run: flutter upgrade
     
       - name: Cache
         id: cache-primes
