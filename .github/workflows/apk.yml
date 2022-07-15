@@ -12,6 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '2.10.5'
+      - run: flutter config --no-analytics
+      - run: flutter upgrage
+    
       - name: Cache
         id: cache-primes
         uses: actions/cache@v3
@@ -29,19 +39,10 @@ jobs:
         if: steps.cache-primes.outputs.cache-hit != 'true'
         run: cd tools && ./update.sh ../taginfo-db.db && cd ..
 
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '2.10.5'
       - env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         run: echo ${KEY_JKS} > android/key.jks
       
-      - run: flutter config --no-analytics
-      - run: flutter upgrage
       - env:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           ALIAS_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
