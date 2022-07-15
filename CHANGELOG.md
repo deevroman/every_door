@@ -2,13 +2,22 @@
 
 ## 0.8
 
-_Unreleased_
+_Released on 2022-07-15_
 
-### Opening Hours Editor
+* Removed `addr:postcode` and added `building:material` to the building properties.
+* Removed non-card options from the payment setting.
+* Disabled map jumping in POI mode because of the number of POI.
+* The editor did not download address points.
+* No addresses on buildings in Netherlands.
+* Removed `not:name` field.
+
+## Opening Hours Editor
 
 * Could not mark an hours fragment as `off`.
-* When switching to the raw hours editor, the value was not updated.
 * An inactive `PH` interval is no longer added by default.
+* Hour options are displayed in five columns instead of four.
+* When switching to the raw hours editor, the value was not updated.
+* `24/7` value was missing from the raw value editor.
 
 ## 0.7
 

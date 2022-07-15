@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' show Colors, TextStyle;
 
 const kAppTitle = 'Every Door';
-const kAppVersion = '0.7'; // Also used for presets.db versioning
+const kAppVersion = '0.8'; // Also used for presets.db versioning
 
 const kDefaultLocation = <double>[59.94, 30.39];
 const kDatabaseName = 'every_door.db';
