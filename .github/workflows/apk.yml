@@ -23,20 +23,20 @@ jobs:
       - run: flutter upgrade
     
       - name: Cache
-        id: cache-primes
-        uses: actions/cache@v3
+        id: cache-presets
+        uses: pat-s/always-upload-cache@v3.0.1
         with:
           path: assets/presets.db
           key: presets
 
       - name: download & unzip
-        if: steps.cache-primes.outputs.cache-hit != 'true'
+        if: steps.cache-presets.outputs.cache-hit != 'true'
         run: |
           wget -q https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2
           bzip2 -d taginfo-db.db.bz2
 
       - name: generate presets.db
-        if: steps.cache-primes.outputs.cache-hit != 'true'
+        if: steps.cache-presets.outputs.cache-hit != 'true'
         run: cd tools && ./update.sh ../taginfo-db.db && cd ..
 
       - env:
