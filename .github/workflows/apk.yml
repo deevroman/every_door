@@ -41,7 +41,7 @@ jobs:
 
       - env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
-        run: echo $KEY_JKS | base64 -d > android/key.jks
+        run: echo -n $KEY_JKS | base64 -d > android/key.jks
       
       - run: flutter pub get
       
