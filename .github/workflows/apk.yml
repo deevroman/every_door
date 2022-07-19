@@ -41,12 +41,10 @@ jobs:
 
       - env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
-        run: echo ${KEY_JKS} > android/key.jks
+        run: echo $KEY_JKS | base64 -d > android/key.jks
       
-      - env:
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          ALIAS_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
-        run: flutter pub get
+      - run: flutter pub get
+      
       - env:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           ALIAS_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
