@@ -152,6 +152,10 @@ bool isAmenityTags(Map<String, String> tags) {
       'chair',
       'nameplate',
       'lounger',
+      // Reverted
+      'atm',
+      'parcel_locker',
+      'vending_machine',
     };
     return !wrongAmenities.contains(v);
   } else if (k == 'tourism') {
