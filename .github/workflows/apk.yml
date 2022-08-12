@@ -55,6 +55,11 @@ jobs:
           name: app-release.apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 1
+      - uses: actions/upload-artifact@v2
+        with:
+          name: presets.db
+          path: assets/presets.db
+          retention-days: 3
   create_release:
     name: "Prelease"
     needs: build
@@ -69,3 +74,11 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: app-release.apk
+      
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: presets.db
