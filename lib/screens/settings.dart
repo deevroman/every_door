@@ -4,8 +4,10 @@ import 'package:every_door/fields/combo.dart';
 import 'package:every_door/fields/helpers/combo_page.dart';
 import 'package:every_door/helpers/payment_tags.dart';
 import 'package:every_door/providers/changes.dart';
+import 'package:every_door/providers/changeset_tags.dart';
 import 'package:every_door/providers/editor_settings.dart';
 import 'package:every_door/providers/geolocation.dart';
+import 'package:every_door/providers/need_update.dart';
 import 'package:every_door/providers/notes.dart';
 import 'package:every_door/providers/osm_auth.dart';
 import 'package:every_door/providers/osm_data.dart';
@@ -13,6 +15,7 @@ import 'package:every_door/providers/presets.dart';
 import 'package:every_door/screens/settings/about.dart';
 import 'package:every_door/screens/settings/account.dart';
 import 'package:every_door/screens/settings/changes.dart';
+import 'package:every_door/screens/settings/changeset_pane.dart';
 import 'package:every_door/screens/settings/imagery.dart';
 import 'package:every_door/screens/settings/language.dart';
 import 'package:flutter/foundation.dart';
@@ -33,6 +36,7 @@ class SettingsPage extends ConsumerWidget {
     final login = ref.watch(authProvider);
     final editorSettings = ref.watch(editorSettingsProvider);
     final forceLocation = ref.watch(forceLocationProvider);
+    final hashtags = ref.watch(changesetTagsProvider).getHashtags();
     final loc = AppLocalizations.of(context)!;
 
     final haveChanges = ref.watch(changesProvider).length > 0;
@@ -64,7 +68,18 @@ class SettingsPage extends ConsumerWidget {
                       MaterialPageRoute(
                           builder: (context) => OsmAccountPage()));
                 },
-              )
+              ),
+              SettingsTile(
+                title: Text(loc.settingsHashtags),
+                trailing: Icon(Icons.navigate_next),
+                description: hashtags.isEmpty ? null : Text(hashtags),
+                onPressed: (context) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ChangesetSettingsPage()));
+                },
+              ),
             ],
           ),
           SettingsSection(
@@ -110,6 +125,7 @@ class SettingsPage extends ConsumerWidget {
                     AlertController.show(loc.settingsPurgedObsoleteTitle,
                         loc.settingsPurgedMessage(count), TypeAlert.success);
                   }
+                  ref.read(needMapUpdateProvider).trigger();
                 },
               ),
             ],

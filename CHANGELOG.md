@@ -1,19 +1,65 @@
 # Every Door App Change Log
 
-## 2.0
+## 3.0
 
-_Unreleased_
+_Released on 2022-10-25_
 
 ### Highlights
 
-* Increased confirmation interval to 2 months.
+* You can zoom out to the max to navigate wherever you want.
+* Zoom levels are preserved between modes.
+* Direction editor (for degrees 0-360 clockwise).
+* Changed colors in the micromapping mode and made them more stable.
 
 ### Other
 
+* Street names from streets and manually entered values were missing.
+* Added `attraction=*` to supported keys.
+* Displaying room number in POI tiles.
+* Tag `opening_hours:signed=no` is removed after adding opening hours.
+* Changeset hashtags box was hidden behind the keyboard.
+* Extended numeric keyboard for `level` supporting negative values.
+* Resolving a non-uploaded note now deletes it.
+* Fixed processing `disused:*` keys for changeset comments.
+* Increased max zoom to 21.
+* Option to mark a newly created amenity disused (or delete it).
+* Added `shop=vacant` to preset searching results.
+* Added OSM notes to the map chooser.
+* Translation into Punjabi (Pakistan) language (thanks @bgo-eiu)
+  and major updates to Norwegian (thanks Nikolaj Fyhn) and Esperanto (thanks jolesh).
+
+## 2.0
+
+_Released on 2022-09-10_
+
+### Highlights
+
+* Changeset hashtags.
+* Increased confirmation interval to 2 months.
+* Name field is focused when creating a new POI.
+* Warnings for amenities that have a `fixme` tag or that are too old.
+
+### Other
+
+* Fixed filtering for empty floor values.
 * Show `name:en` etc on a tile when `name` is not set.
 * Editing a building that's also a POI removed `check_date` from it.
+* Removed the requirement for a roof shape to get a yellow building label.
+* Added a FAQ entry about yellow labels and white dots.
 * Increased warning threshold for too many elements to 60k.
+* "Cards only" option for payment fields.
 * Changed the icon for raw tags.
+* Added missing language names for the chooser.
+* Streamlined URL parsing, thanks to @mitchellmebane.
+* Fixed updating the pending uploads list after changing an object from within it.
+* Field labels were not translated after switching language from inside the app.
+* Bing imagery was not immediately visible in the list.
+* Checking for stale authentication before uploading.
+* Tap on the tile downloading button the second time to abort downloading.
+* Split buttons on the entrance card in two lines.
+* Editing breaks in opening hours in two taps, not four.
+* Translations into Catalan (thanks raf) and Croatian (thanks @mnalis),
+  major improvements to Dutch (thanks invalidCards).
 
 ## 1.0
 

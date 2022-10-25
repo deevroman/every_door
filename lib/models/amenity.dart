@@ -109,7 +109,7 @@ class OsmChange extends ChangeNotifier implements Comparable {
   bool get isPoint => element?.isPoint ?? true;
   bool get canDelete =>
       (element?.isPoint ?? true) && !(element?.isMember ?? false);
-  bool get canMove => canDelete;
+  bool get canMove => canDelete && (isNew || kind != ElementKind.entrance);
   ElementKind get kind => detectKind(getFullTags());
   bool get isIncomplete => needsMoreInfo(getFullTags());
 
@@ -386,6 +386,15 @@ class OsmChange extends ChangeNotifier implements Comparable {
       this[alternativeKey] = value;
     else
       this[key] = value;
+  }
+
+  removeOpeningHoursSigned() {
+    const kSigned = 'opening_hours:signed';
+    if (this[kSigned] == 'no' &&
+        this['opening_hours'] != null &&
+        element?.tags['opening_hours'] == null) {
+      removeTag(kSigned);
+    }
   }
 
   Map<String, bool> _getPaymentOptions() {

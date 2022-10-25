@@ -63,7 +63,7 @@
   "@editorCloseTitle": {
     "description": "Title for the message on closing the editor without saving changes."
   },
-  "editorCloseMessage": "Izgubil/a boš neshranjene spremembe. Nadaljujem?",
+  "editorCloseMessage": "Zavreči spremembe brez shranjevanja?",
   "@editorCloseMessage": {
     "description": "Message on closing the editor without saving changes."
   },
@@ -328,7 +328,7 @@
   "@fieldAddressTap": {
     "description": "Title for the pane when a user can tap an address to choose it."
   },
-  "fieldPhoneWrong": "Napačna oblika telefonske št.",
+  "fieldPhoneWrong": "Napačna oblika telefonske številke",
   "@fieldPhoneWrong": {
     "description": "Validation message for a non-standard phone number."
   },
@@ -816,7 +816,7 @@
   "@faqEntranceContent": {},
   "faqMapTinyContent": "Ker to ni bistvo. Na zemljevidu le preverjaš svoj položaj in ga premikaš, za prilagoditev. Oglej si spodnji seznam točk POI, razvrščen po oddaljenosti.\n\nZemljevid se poveča, ko urejaš vsebine, ki so oddaljene od tvoje lokacije. Aplikacija je pravzaprav narejena za urejanje stvari, ki jih vidiš z očmi.",
   "@faqMapTinyContent": {},
-  "faqCheckmarksContent": "To so oznake, da so bili podatki o točkah POI potrjeni. Dodajo oznako »check_date« s trenutnim datumom.\n\nZamisel za kontrolnimi oznakami je ta, da si, recimo, prvič pregledaš polovico mesta. Nato se po enem mesecu vrneš in ponovno ogledaš stvari. Nekako moraš označiti, da si videl/a objekt, vendar se v zvezi z njim ni nič spremenilo. To je kljukica: tapneš jo in nadaljuješ.\n\nOznaka ostane označena dva tedna. Po tem času lahko ponovno opraviš ogled in potrditev.",
+  "faqCheckmarksContent": "To so oznake, da so bili podatki o točkah POI potrjeni. Dodajo oznako »check_date« s trenutnim datumom.\n\nZamisel za kontrolnimi oznakami je ta, da si, recimo, prvič pregledaš polovico mesta. Nato se po enem mesecu vrneš in ponovno ogledaš stvari. Nekako moraš označiti, da si videl/a objekt, vendar se v zvezi z njim ni nič spremenilo. To je kljukica: tapneš jo in nadaljuješ.\n\nOznaka ostane označena dva meseca. Po tem času lahko ponovno opraviš ogled in potrditev.",
   "@faqCheckmarksContent": {},
   "faqEntrance": "Kako dodati vhod v stavbo?",
   "@faqEntrance": {},
@@ -1067,5 +1067,65 @@
   "notesAddNote": "Dodaj opombo",
   "@notesAddNote": {
     "description": "Tooltip for the button to add a note."
+  },
+  "faqYellow": "Zakaj so nekatere hišne številke rumene?",
+  "@faqYellow": {},
+  "fieldCardsOnly": "samo kartice",
+  "@fieldCardsOnly": {
+    "description": "Payment field label for cards only."
+  },
+  "faqYellowContent": "Ne rumene oznake v načinu vhodov in bele pike v načinu mikromapiranja pomenijo, da elementi nimajo nekaterih pomembnih atributov. Na primer:\n\n* Stavbe naj bi imele več nadstropij.\n* Vhodi bi morali imeti vrsto in, za stopnišča, razpon nadstropij.\n* Klopi morajo imeti material in naslonjalo.\n* Drevesa morajo imeti vrsto in cikel listov.",
+  "@faqYellowContent": {},
+  "warningWrongTag": "Napačna oznaka: {tag}",
+  "@warningWrongTag": {
+    "description": "Warning message for tags like shop=yes and amenity=no.",
+    "placeholders": {
+      "tag": {
+        "description": "The tag with the issue",
+        "example": "shop=yes"
+      }
+    }
+  },
+  "warningTooOld": "Točka POI je stara {years}",
+  "@warningTooOld": {
+    "description": "Warning message for when an amenity is many years old.",
+    "placeholders": {
+      "years": {
+        "description": "How many years ago the amenity was edited.",
+        "example": "5 years"
+      }
+    }
+  },
+  "settingsHashtags": "Ključniki nabora sprememb",
+  "@settingsHashtags": {
+    "description": "Settings entry for editing changeset hashtags."
+  },
+  "hashtagsLabel": "Besede za ključnike",
+  "@hashtagsLabel": {
+    "description": "Label for a text field with changeset hashtags."
+  },
+  "notesCancelMessage": "Želiš preklicati svojo opombo OSM?",
+  "@notesCancelMessage": {
+    "description": "Message when cancelling an OSM note that has non-empty content."
+  },
+  "warningFixme": "Fixme: {value}",
+  "@warningFixme": {
+    "description": "Warning message for when an object has a non-empty fixme value.",
+    "placeholders": {
+      "value": {
+        "description": "Value of the fixme tag"
+      }
+    }
+  },
+  "years": "{count,plural, =1{{count} leto}, =2{{count} leti}, =few{{count} leta}, =other{{count} let}}",
+  "@years": {
+    "description": "Number of years. Used in the \"amenity is N years old\" message.",
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "hashtagsConfirm": "Potrdi oznake pri nalaganju",
+  "@hashtagsConfirm": {
+    "description": "Label for a switch tile for confirmation of hashtags on pressing the upload button."
   }
 }

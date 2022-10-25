@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' show Colors, TextStyle;
 
 const kAppTitle = 'Every Door';
-const kAppVersion = '1.0'; // Also used for presets.db versioning
+const kAppVersion = '3.0'; // Also used for presets.db versioning
 
 const kDefaultLocation = <double>[59.94, 30.39];
 const kDatabaseName = 'every_door.db';
@@ -19,8 +19,9 @@ const kSuperObsoleteData = Duration(days: 14); // for purging
 const kAmenitiesInList = 12; // for shops & amenities mode
 const kMicroStuffInList = 24; // same, but for micromapping mode
 const kTapRadius = 20.0; // flutter pixels
-const kOldAmenityDays = 28; // check_date expiration rate
+const kOldAmenityDays = 60; // check_date expiration rate
 const kOldAmenityDaysEditor = 3; // check_date expiration rate for the editor
+const kOldAmenityWarning = 365 * 5; // When warn about an old amenity
 const kFieldColor = Colors.lightBlueAccent;
 const kFieldFontSize = 18.0; // font size in fields
 const kFieldTextStyle = TextStyle(fontSize: kFieldFontSize);
@@ -31,6 +32,8 @@ const kUploadOnClose = false; // whether to trigger data upload on app deactivat
 const kShowContactSetting = false; // whether to show the "contact:" setting
 const kSlowDownGPS = true; // skip location changes that are too small to register
 const kInitialZoom = 17.0; // For POI list screen
+const kEditMinZoom = 15.0; // Below that, the navigation mode switches on
+const kEditMaxZoom = 21.0; // Same for all modes
 const kMicromappingTapZoom = 19.0; // how much to zoom in when tapping a bunch of elements in micromapping
 const kRotationThreshold = 30.0; // degrees, for snapping to zero rotation
 const kManualOption = '✍️'; // Emoji icon for entering values by hand

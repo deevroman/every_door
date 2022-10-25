@@ -44,6 +44,19 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
   }
 
   @override
+  void didUpdateWidget(covariant ChooserIntervalField oldWidget) {
+    if (widget.interval == null) {
+      _state = _ChooserState.first;
+      start = null;
+      end = null;
+    } else if (_state == _ChooserState.complete) {
+      start = widget.interval?.start;
+      end = widget.interval?.end;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     Widget result;
@@ -178,33 +191,62 @@ class _ChooserIntervalFieldState extends State<ChooserIntervalField> {
         );
       } else {
         if (!editingHours) {
-          result = GridChooser<HoursInterval>(
-            title: loc.fieldHoursBreak,
-            columns: 1,
-            options: [
-              for (final t in timeDefaults.defaultBreaks)
-                // TODO: what if the list is empty?
-                // if (widget.breakParent!.contains(t))
-                GridChooserItem(
-                  value: t,
-                  label: t.toString(),
-                ),
-            ],
-            onChoose: (value) {
-              setState(() {
-                start = value.start;
-                end = value.end;
-                _state = _ChooserState.complete;
-                if (widget.onChange != null) widget.onChange!(value);
-              });
-            },
-            onMoreTime: () {
-              setState(() {
-                editingHours = true;
-                _state = _ChooserState.first;
-              });
-            },
-          );
+          if (_state != _ChooserState.second) {
+            result = GridChooser<StringTime>(
+              title: loc.fieldHoursBreak,
+              columns: 3,
+              options: [
+                for (final t in timeDefaults.defaultBreakStarts)
+                  GridChooserItem(
+                    value: t,
+                    label:
+                        t.isRound ? t.toString().substring(0, 2) : t.toString(),
+                    labelSuffix: t.isRound ? ':00-' : '-',
+                  ),
+              ],
+              onChoose: (value) {
+                setState(() {
+                  start = value;
+                  _state = _ChooserState.second;
+                });
+              },
+              onMoreTime: () {
+                setState(() {
+                  editingHours = true;
+                });
+              },
+            );
+          } else {
+            result = GridChooser<StringTime>(
+              title: '$start- ${loc.fieldHoursBreak}',
+              columns: 3,
+              options: [
+                for (final t in timeDefaults.defaultBreakEnds)
+                  if (t > start!)
+                    GridChooserItem(
+                      value: t,
+                      label: '-' +
+                          (t.isRound
+                              ? t.toString().substring(0, 2)
+                              : t.toString()),
+                      labelSuffix: t.isRound ? ':00' : null,
+                    ),
+              ],
+              onChoose: (value) {
+                setState(() {
+                  end = value;
+                  _state = _ChooserState.complete;
+                  if (widget.onChange != null)
+                    widget.onChange!(HoursInterval(start!, end!));
+                });
+              },
+              onMoreTime: () {
+                setState(() {
+                  editingHours = true;
+                });
+              },
+            );
+          }
         } else {
           final parentIntervalGood =
               widget.breakParent!.start < widget.breakParent!.end;
@@ -410,8 +452,8 @@ class GridChooser<T> extends StatelessWidget {
                             padding: EdgeInsets.symmetric(horizontal: 5.0),
                             child: DefaultTextStyle(
                               child: options[i + j].buildWidget(),
-                              style:
-                                  TextStyle(fontSize: 30.0, color: Colors.black),
+                              style: TextStyle(
+                                  fontSize: 30.0, color: Colors.black),
                             ),
                           ),
                           onPressed: () {
@@ -474,6 +516,22 @@ class TimeDefaults {
     '15:00',
     '18:30',
   ];
+  static final kInitialBreakStarts = [
+    '12:00',
+    '12:30',
+    '13:00',
+    '14:00',
+    '14:30',
+    '15:00',
+  ];
+  static final kInitialBreakEnds = [
+    '13:00',
+    '13:30',
+    '14:00',
+    '14:30',
+    '15:00',
+    '17:00',
+  ];
   static final kInitialBreaks = [
     '12:00-13:00',
     '13:00-14:00',
@@ -484,6 +542,8 @@ class TimeDefaults {
   late List<StringTime> defaultStartTimes;
   late List<StringTime> defaultEndTimes;
   late List<HoursInterval> defaultBreaks;
+  late List<StringTime> defaultBreakStarts;
+  late List<StringTime> defaultBreakEnds;
 
   TimeDefaults({List<String>? around, Iterable<HoursFragment>? fragments}) {
     updateFromAround(around ?? [], fragments);
@@ -498,16 +558,20 @@ class TimeDefaults {
     final starts = Counter<String>();
     final ends = Counter<String>();
     final breaks = Counter<String>();
+    final breakStarts = Counter<String>();
+    final breakEnds = Counter<String>();
 
     for (final hours in hoursAround) {
       for (final start in kStart.allMatches(hours))
-        starts.add(start.group(1)!.padLeft(2, '0'));
+        starts.add(start.group(1)!.padLeft(5, '0'));
       for (final end in kEnd.allMatches(hours))
-        ends.add(end.group(1)!.padLeft(2, '0'));
+        ends.add(end.group(1)!.padLeft(5, '0'));
       for (final break_ in kBreak.allMatches(hours)) {
-        breaks.add(break_.group(1)!.padLeft(2, '0') +
+        breaks.add(break_.group(1)!.padLeft(5, '0') +
             '-' +
-            break_.group(2)!.padLeft(2, '0'));
+            break_.group(2)!.padLeft(5, '0'));
+        breakStarts.add(break_.group(1)!.padLeft(5, '0'));
+        breakEnds.add(break_.group(2)!.padLeft(5, '0'));
       }
     }
 
@@ -517,6 +581,9 @@ class TimeDefaults {
           starts.add(fragment.interval!.start.toString(), 10);
           ends.add(fragment.interval!.end.toString(), 10);
           breaks.addAll(fragment.breaks.map((b) => b.toString()), 10);
+          breakStarts.addAll(
+              fragment.breaks.map((b) => b.start.toString()), 10);
+          breakEnds.addAll(fragment.breaks.map((b) => b.end.toString()), 10);
         }
       }
     }
@@ -535,6 +602,16 @@ class TimeDefaults {
       kInitialBreaks.map((s) => HoursInterval.parse(s)),
       breaks.mostOccurentItems(cutoff: 3).map((s) => HoursInterval.parse(s)),
       4,
+    );
+    defaultBreakStarts = _addFromAround(
+      kInitialBreakStarts.map((s) => StringTime(s)),
+      breakStarts.mostOccurentItems(cutoff: 3).map((s) => StringTime(s)),
+      6,
+    );
+    defaultBreakEnds = _addFromAround(
+      kInitialBreakEnds.map((s) => StringTime(s)),
+      breakEnds.mostOccurentItems(cutoff: 3).map((s) => StringTime(s)),
+      6,
     );
   }
 

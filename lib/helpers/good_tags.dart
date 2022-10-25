@@ -8,7 +8,7 @@ const kMainKeys = <String>[
   'emergency', 'waterway', 'man_made', 'power', 'aeroway', 'aerialway',
   'marker', 'public_transport', 'traffic_sign', 'hazard', 'telecom',
   'landuse', 'military', 'barrier', 'building', 'entrance', 'boundary',
-  'advertising', 'playground', 'traffic_calming',
+  'advertising', 'playground', 'traffic_calming', 'attraction',
 ];
 final kMainKeysSet = Set.of(kMainKeys);
 
@@ -46,12 +46,12 @@ enum ElementKind {
 }
 
 /// Find the single main key for an object. Also considers lifecycle prefixes.
-String? getMainKey(Map<String, String> tags) {
+String? getMainKey(Map<String, String> tags, [bool noPrefix = false]) {
   for (final k in kMainKeys) {
     if (tags[k] == 'no') continue;
     if (tags.containsKey(k)) return k;
-    if (tags.containsKey(kDisused + k)) return kDisused + k;
-    if (tags.containsKey(kDeleted + k)) return kDeleted + k;
+    if (tags.containsKey(kDisused + k)) return noPrefix ? k : kDisused + k;
+    if (tags.containsKey(kDeleted + k)) return noPrefix ? k : kDeleted + k;
   }
   return null;
 }
@@ -212,6 +212,13 @@ bool isAmenityTags(Map<String, String> tags) {
     return v == 'ambulance_station';
   } else if (k == 'military') {
     return v == 'office';
+  } else if (k == 'attraction') {
+    const goodAttraction = <String>{
+      // From top attraction values used with opening_hours.
+      'big_wheel', 'amusement_ride', 'winery', 'maze', 'carousel', 'geosite',
+      'train', 'summer_toboggan', 'river_rafting',
+    };
+    return goodAttraction.contains(v);
   }
   return false;
 }
@@ -231,7 +238,7 @@ bool isMicroTags(Map<String, String> tags) {
     'playground', 'advertising', 'power', 'traffic_calming',
     'barrier', 'highway', 'railway', 'natural', 'leisure',
     'marker', 'public_transport', 'hazard', 'traffic_sign',
-    'telecom',
+    'telecom', 'attraction',
   };
   if (kAllGoodKeys.contains(k)) return true;
   return false;
@@ -289,6 +296,7 @@ bool isGoodTags(Map<String, String> tags) {
     const kGoodRailway = <String>{
       'station', 'tram_stop', 'halt', 'platform', 'stop', 'signal',
       'crossing', 'milestone', 'tram_crossing', 'subway_entrance',
+      'ventilation_shaft',
     };
     return kGoodRailway.contains(v);
   } else if (k == 'natural') {
@@ -324,6 +332,7 @@ bool isGoodTags(Map<String, String> tags) {
       'bridge', 'works', 'clearcut', 'pier', 'wastewater_plant',
       'cutline', 'pipeline', 'embankment', 'breakwater',
       'groyne', 'reservoir_covered', 'water_works', 'courtyard', 'dyke',
+      'ventilation_shaft',
     };
     return !kWrongManMade.contains(v);
   }
@@ -389,7 +398,8 @@ bool isSnapTargetTags(Map<String, String> tags, [SnapTo? kind]) {
 /// Checks whether some selected secondary tags are empty. We display this
 /// information in the micromapping mode.
 bool needsMoreInfo(Map<String, String> tags) {
-  if (tags['amenity'] == 'bench') return tags['backrest'] == null;
+  if (tags['amenity'] == 'bench')
+    return tags['backrest'] == null || tags['material'] == null;
   if (tags['amenity'] == 'bicycle_parking')
     return tags['bicycle_parking'] == null || tags['capacity'] == null;
   if (tags['amenity'] == 'post_box')

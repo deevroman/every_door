@@ -39,7 +39,7 @@
   "@editorSave": {},
   "editorCloseTitle": "Möchtest du den Editor schließen?",
   "@editorCloseTitle": {},
-  "editorCloseMessage": "Die Änderungen wurden noch nicht gespeichert. Willst du den Editor wirklich verlassen?",
+  "editorCloseMessage": "Änderungen ohne Speichern verwerfen?",
   "@editorCloseMessage": {},
   "editorMoreFields": "Mehr Felder",
   "@editorMoreFields": {},
@@ -492,7 +492,7 @@
   "@faqCheckmarks": {},
   "faqEntrance": "Wie kann man einen Gebäudeeingang hinzufügen?",
   "@faqEntrance": {},
-  "faqEntranceContent": "Unten befindet sich eine Reihe mit Schaltflächen für die Modi: Mikromapping, Einrichtungen, Eingänge und Notizen.\n\nTippen Sie im Modus Eingänge auf die Tür in der unteren Ecke oder ziehen Sie diese auf die Karte.",
+  "faqEntranceContent": "Unten befindet sich eine Reihe mit Schaltflächen für die Modi: Mikromapping, Einrichtungen, Eingänge und Hinweise.\n\nTippen Sie im Modus Eingänge auf die Tür in der unteren Ecke oder ziehen Sie diese auf die Karte.",
   "@faqEntranceContent": {},
   "faqLetters": "Kann ich Buchstaben als Kennziffer oder Wohnungsnummer eingeben?",
   "@faqLetters": {},
@@ -512,7 +512,7 @@
   },
   "faqMapTiny": "Warum ist die Karte so klein?",
   "@faqMapTiny": {},
-  "faqCheckmarksContent": "Dies sind Zeichen dafür, dass die Daten der Einrichtungen bestätigt wurden. Sie fügen das `check_date`-Tag mit dem aktuellen Datum hinzu.\n\nDie Idee hinter den Häkchen ist, dass Sie beispielsweise beim ersten Mal die halbe Stadt vermessen haben. Dann kamen Sie nach einem Monat zurück und gingen erneut zur Umfrage. Sie müssen irgendwie markieren, dass Sie die Einrichtungen sehen, sich aber nichts daran geändert hat. Das ist das Häkchen: Sie tippen darauf und fahren fort.\n\nDas Häkchen bleibt für zwei Wochen gesetzt. Danach können Sie die Einrichtung erneut bestätigen.",
+  "faqCheckmarksContent": "Dies sind Zeichen dafür, dass die Daten der Einrichtungen bestätigt wurden. Sie fügen das `check_date`-Tag mit dem aktuellen Datum hinzu.\n\nDie Idee hinter den Häkchen ist, dass Sie beispielsweise beim ersten Mal die halbe Stadt vermessen haben. Dann kamen Sie nach einem Monat zurück und gingen erneut zur Umfrage. Sie müssen irgendwie markieren, dass Sie die Einrichtungen sehen, sich aber nichts daran geändert hat. Das ist das Häkchen: Sie tippen darauf und fahren fort.\n\nDas Häkchen bleibt für zwei Monate gesetzt. Danach können Sie die Einrichtung erneut bestätigen.",
   "@faqCheckmarksContent": {},
   "faqTagging": "Alle Tagging-Fragen",
   "@faqTagging": {},
@@ -598,11 +598,11 @@
   "@notesAnonymous": {
     "description": "Name for anonymous note submitters."
   },
-  "changesMapNotes": "Kartennotizen und Zeichnungen",
+  "changesMapNotes": "Kartenhinweise und Zeichnungen",
   "@changesMapNotes": {
     "description": "Title for a grouped change tile for map notes and drawings."
   },
-  "changesOsmNote": "OSM-Notiz",
+  "changesOsmNote": "OSM-Hinweis",
   "@changesOsmNote": {
     "description": "Prefix for an OSM note in a changes tile."
   },
@@ -632,7 +632,7 @@
   },
   "navEntrancesMode": "Eingänge-Modus",
   "@navEntrancesMode": {},
-  "navNotesMode": "Notizen-Modus",
+  "navNotesMode": "Hinweise-Modus",
   "@navNotesMode": {
     "description": "Tooltip for the notes mode button on the nav panel."
   },
@@ -696,7 +696,7 @@
   "@fieldNameCopy": {
     "description": "Tooltip for a button to copy name value between languages."
   },
-  "notesAddNote": "Notiz hinzufügen",
+  "notesAddNote": "Hinweis hinzufügen",
   "@notesAddNote": {
     "description": "Tooltip for the button to add a note."
   },
@@ -759,5 +759,69 @@
   "editorTags": "Alle Attribute",
   "@editorTags": {
     "description": "Tooltip for a button to open tags pane."
+  },
+  "fieldCardsOnly": "Nur Kartenzahlung",
+  "@fieldCardsOnly": {
+    "description": "Payment field label for cards only."
+  },
+  "faqYellow": "Warum sind einige Hausnummern gelb?",
+  "@faqYellow": {},
+  "faqYellowContent": "Nicht-gelbe Beschriftungen im Modus Eingänge und weiße Punkte im Modus Mikromapping bedeuten, dass den Elementen einige wichtige Attribute fehlen. Zum Beispiel:\n\n* Gebäude sollten eine Anzahl von Ebenen haben.\n* Eingänge sollten eine Angabe zum Typ und, bei Treppen, eine Angabe der zugänglichen Wohnungen haben.\n* Bänke sollten eine Angabe zu Material und Rückenlehne haben.\n* Bäume sollten eine Angaben zu Blattart und -zyklus haben.",
+  "@faqYellowContent": {},
+  "warningWrongTag": "Falsches Attribut: {tag}",
+  "@warningWrongTag": {
+    "description": "Warning message for tags like shop=yes and amenity=no.",
+    "placeholders": {
+      "tag": {
+        "description": "The tag with the issue",
+        "example": "shop=yes"
+      }
+    }
+  },
+  "warningTooOld": "Die Einrichtung ist {years} alt",
+  "@warningTooOld": {
+    "description": "Warning message for when an amenity is many years old.",
+    "placeholders": {
+      "years": {
+        "description": "How many years ago the amenity was edited.",
+        "example": "5 years"
+      }
+    }
+  },
+  "notesCancelMessage": "OSM-Hinweis abbrechen?",
+  "@notesCancelMessage": {
+    "description": "Message when cancelling an OSM note that has non-empty content."
+  },
+  "warningFixme": "Fixme: {value}",
+  "@warningFixme": {
+    "description": "Warning message for when an object has a non-empty fixme value.",
+    "placeholders": {
+      "value": {
+        "description": "Value of the fixme tag"
+      }
+    }
+  },
+  "settingsHashtags": "Hashtags des Änderungssatzes",
+  "@settingsHashtags": {
+    "description": "Settings entry for editing changeset hashtags."
+  },
+  "hashtagsLabel": "Wörter für Hashtags",
+  "@hashtagsLabel": {
+    "description": "Label for a text field with changeset hashtags."
+  },
+  "hashtagsConfirm": "Tags beim Hochladen bestätigen",
+  "@hashtagsConfirm": {
+    "description": "Label for a switch tile for confirmation of hashtags on pressing the upload button."
+  },
+  "years": "{count,plural, =1{{count} Jahr}, =few{{count} Jahre}, =other{{count} Jahre}}",
+  "@years": {
+    "description": "Number of years. Used in the \"amenity is N years old\" message.",
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "fieldDirectionSet": "Festlegen",
+  "@fieldDirectionSet": {
+    "description": "Button label for setting a direction (0-360°) value."
   }
 }

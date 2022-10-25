@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:every_door/constants.dart';
+import 'package:every_door/fields/payment.dart';
 import 'package:every_door/helpers/good_tags.dart';
 import 'package:every_door/models/amenity.dart';
 import 'package:every_door/models/field.dart';
 import 'package:every_door/models/preset.dart';
 import 'package:every_door/providers/changes.dart';
-import 'package:every_door/providers/geolocation.dart';
+import 'package:every_door/providers/location.dart';
 import 'package:every_door/providers/last_presets.dart';
 import 'package:every_door/providers/need_update.dart';
 import 'package:every_door/providers/presets.dart';
@@ -111,7 +112,13 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
           final hasStdFields = stdFields.map((e) => e.key).toSet();
           for (final f in preset!.fields) {
             if (PresetProvider.kStandardPoiFields.contains(f.key) &&
-                !hasStdFields.contains(f.key)) stdFields.add(f);
+                !hasStdFields.contains(f.key)) {
+              stdFields.add(f);
+            }
+            // Also move payment_multi.
+            if (f.key == 'payment:' && !hasStdFields.contains('payment')) {
+              stdFields.add(PaymentPresetField(label: 'Accept cards'));
+            }
           }
         }
         // Add opening_hours to moreFields if it's not anywhere.
@@ -190,6 +197,8 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
     final fullTags = amenity.getFullTags();
     // Setting the mark automatically.
     if (needsCheckDate(fullTags)) amenity.check();
+    // Remove opening_hours:signed if needed.
+    amenity.removeOpeningHoursSigned();
     // Store the preset when an object was saved, to track used ones.
     if (widget.preset != null) {
       ref.read(lastPresetsProvider).registerPreset(widget.preset!, fullTags);
@@ -202,15 +211,18 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
   }
 
   deleteAndClose() {
-    final changes = ref.read(changesProvider);
-    if (amenity.isNew) {
-      changes.deleteChange(amenity);
-    } else {
-      amenity.deleted = true;
-      changes.saveChange(amenity);
+    if (widget.amenity != null) {
+      // No use deleting an amenity that just've been created.
+      final changes = ref.read(changesProvider);
+      if (amenity.isNew) {
+        changes.deleteChange(amenity);
+      } else {
+        amenity.deleted = true;
+        changes.saveChange(amenity);
+      }
+      ref.read(needMapUpdateProvider).trigger();
     }
     Navigator.pop(context);
-    ref.read(needMapUpdateProvider).trigger();
   }
 
   confirmDisused(BuildContext context) async {
@@ -308,11 +320,8 @@ class _PoiEditorPageState extends ConsumerState<PoiEditorPage> {
                             ),
                             buildFields(fields),
                           ],
-                          // Not displaying buttons for just created amenities.
-                          if (widget.amenity != null) ...[
-                            SizedBox(height: 20.0),
-                            buildTopButtons(context),
-                          ],
+                          SizedBox(height: 20.0),
+                          buildTopButtons(context),
                           SizedBox(height: 10.0),
                           if (moreFields.isNotEmpty) ...[
                             ExpansionTile(
