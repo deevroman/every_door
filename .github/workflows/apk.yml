@@ -48,7 +48,7 @@ jobs:
       - env:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           ALIAS_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
-        run: flutter build apk --info --release
+        run: flutter build apk --release
 
       - uses: actions/upload-artifact@v2
         with:
