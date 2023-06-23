@@ -165,14 +165,16 @@ class _PoiListPageState extends ConsumerState<PoiListPane> {
         await Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (_) => PoiEditorPage(amenity: amenitiesAtCenter.first)),
+            builder: (_) => PoiEditorPage(amenity: amenitiesAtCenter.first),
+            fullscreenDialog: true,
+          ),
         );
         // When finished, reset zoomed in state.
-        ref.read(microZoomedInProvider.state).state = null;
+        ref.read(microZoomedInProvider.notifier).state = null;
         updateNearest();
       } else {
         // Multiple amenities: zoom in and enhance.
-        ref.read(microZoomedInProvider.state).state = area;
+        ref.read(microZoomedInProvider.notifier).state = area;
         // updateNearest(forceLocation: area.center);
         setState(() {
           nearestPOI = nearestPOI

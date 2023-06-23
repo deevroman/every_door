@@ -10,6 +10,7 @@ import 'package:every_door/fields/radio.dart';
 import 'package:every_door/fields/text.dart';
 import 'package:every_door/fields/website.dart';
 import 'package:every_door/fields/wheelchair.dart';
+import 'package:every_door/fields/wiki_commons.dart';
 import 'package:flutter/material.dart';
 import 'package:every_door/models/amenity.dart';
 
@@ -134,6 +135,12 @@ PresetField fieldFromJson(Map<String, dynamic> data,
       return WheelchairPresetField(label: label);
     case 'level':
       return FloorPresetField(label: label);
+    case 'wikimedia_commons':
+      return WikiCommonsPresetField(
+        label: label,
+        placeholder: placeholder,
+        prerequisite: prerequisite,
+      );
   }
 
   if (key.contains('opening_hours')) {
@@ -168,6 +175,7 @@ PresetField fieldFromJson(Map<String, dynamic> data,
   switch (typ) {
     case 'text':
     case 'colour': // TODO: remove when we have a colour picker
+    case 'date':
     case 'textarea':
       return TextPresetField(
         key: key,

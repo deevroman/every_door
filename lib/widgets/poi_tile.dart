@@ -137,11 +137,13 @@ class PoiTile extends ConsumerWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                ref.read(microZoomedInProvider.state).state = null;
+                ref.read(microZoomedInProvider.notifier).state = null;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => PoiEditorPage(amenity: amenity)),
+                      builder: (_) => PoiEditorPage(amenity: amenity),
+                      fullscreenDialog: true,
+                  ),
                 );
               },
               child: Text.rich(

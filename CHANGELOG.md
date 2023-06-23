@@ -1,5 +1,39 @@
 # Every Door App Change Log
 
+## 3.2
+
+_Unreleased_
+
+* Removed the `check_date` field from the editor.
+
+## 3.1
+
+_Released on 2023-06-03_
+
+* Updated Maxar and Mapbox imagery keys.
+* Supporting tagging schema v6, added hundred new presets.
+* Some POI like churches and libraries have reduced obsoletion rate (1 year).
+* Deleting buildings via lifecycle prefixes is forbidden now.
+* Added `block_number` field for japanese addresses.
+* `name:signed` is not a language suffix.
+* When downloading data for an area, do not delete new notes (but changes
+  to existing notes would be lost though).
+* Purge non-modified notes when purging all data.
+* Update all secondary tags when changing a type for an amenity.
+* Fixed error when after uploading new amenities and editing them, duplicates
+  might have appeared.
+* Pasting a `wikimedia_commons` value strips it of wiki formatting.
+* Fixed long press on the sharing icon at the raw tags panel.
+* Snack bar when removing a change does not time out for some reason.
+  Forcibly closing it when leaving the changes list.
+* Switched the editing page to a full screen dialog for better UX on iOS.
+* Allow 1-character Japanese or Chinese search queries.
+* Allow January dates on specific days opening\_hours editor.
+* More emoji for POI types (thanks @ivanbranco and @neuschaefer).
+* Translations into Finnish (thanks Lasse Liehu), Marathi (thanks संकेत गराडे),
+  and Hungarian (thanks Balázs Úr) languages, and major updates to Punjabi
+  (both variants) and Persian.
+
 ## 3.0
 
 _Released on 2022-10-25_
