@@ -102,7 +102,7 @@ class EditorModeController extends Notifier<BaseModeDefinition> {
   void unregister(String name) {
     int pos = _modes.indexWhere((m) => m.name == name);
     if (pos >= 0) {
-      if (_currentMode >= pos) _currentMode -= 1;
+      if (_currentMode > pos) _currentMode -= 1;
       _modes.removeAt(pos);
       state = _modes[_currentMode]; // what if it's not changed?
     }

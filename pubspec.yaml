@@ -85,6 +85,10 @@ dependency_overrides:
     git:
       url: https://github.com/Zverik/flutter_dropdown_alert.git
       ref: master
+  flutter_compass_v2:
+    git:
+      url: https://github.com/Zverik/flutter_compass_v2.git
+      ref: master
   #dart_eval:
   #  path: ../dart_eval
   flutter_eval:

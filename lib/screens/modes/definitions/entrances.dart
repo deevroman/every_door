@@ -126,7 +126,7 @@ class DefaultEntrancesModeDefinition extends EntrancesModeDefinition {
 
     buildingsNeedAddresses = await buildingsHaveAddresses(bounds.center);
 
-    this.nearest = nearest;
+    this.nearest = nearest.where((e) => indexKind(e) < 3).toList();
     notifyListeners();
   }
 
