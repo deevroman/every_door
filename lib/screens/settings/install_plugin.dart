@@ -177,7 +177,8 @@ class _InstallPluginPageState extends ConsumerState<InstallPluginPage> {
             'The plugin API version (${tmpData.apiVersion}) does not match the current version ($kApiVersion).');
       }
 
-      final plugin = await repo.installFromTmpDir(pluginDir);
+      final plugin =
+          await repo.installFromTmpDir(pluginDir, installedSource: data.url);
 
       if (plugin.intro != null && _needShowIntro(plugin) && mounted) {
         _logger.info('Showing intro for ${plugin.id}!');

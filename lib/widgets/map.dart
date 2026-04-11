@@ -384,6 +384,12 @@ class _CustomMapState extends ConsumerState<CustomMap> {
                 tooltip: loc.aboutViewLog,
                 onPressed: openSystemLog,
               ),
+              // Plugin update check
+              MapButton(
+                icon: MultiIcon.font(Icons.system_update_alt),
+                tooltip: loc.pluginsUpdate,
+                onPressed: checkPluginUpdates,
+              ),
               // Plugin install via QR code
               MapButton(
                 icon: MultiIcon.font(Icons.qr_code_scanner),

@@ -14,7 +14,9 @@ import 'package:every_door/generated/l10n/app_localizations.dart'
     show AppLocalizations;
 
 class PluginRepositoryPage extends ConsumerStatefulWidget {
-  const PluginRepositoryPage({super.key});
+  final bool updatesOnly;
+
+  const PluginRepositoryPage({super.key, this.updatesOnly = false});
 
   @override
   ConsumerState<PluginRepositoryPage> createState() =>
@@ -71,15 +73,15 @@ class _PluginRepositoryPageState extends ConsumerState<PluginRepositoryPage> {
       if (!_experimental) list.removeWhere((p) => p.experimental);
       list.sort((a, b) => b.downloads.compareTo(a.downloads));
       items = list
-          .where((p) =>
-              !installed.containsKey(p.id) ||
-              p.version.fresherThan(installed[p.id]))
+          .where((p) {
+            final installedVersion = installed[p.id];
+            if (installedVersion == null) return !widget.updatesOnly;
+            return p.version.fresherThan(installedVersion);
+          })
           .map((p) => PluginCard(
                 plugin: p,
                 actionText: installed.containsKey(p.id)
-                    ? p.version.fresherThan(installed[p.id])
-                        ? loc.pluginsUpdate.toUpperCase()
-                        : null
+                    ? loc.pluginsUpdate.toUpperCase()
                     : loc.pluginsInstall.toUpperCase(),
                 onAction: () {
                   Navigator.of(context).push(
@@ -93,7 +95,8 @@ class _PluginRepositoryPageState extends ConsumerState<PluginRepositoryPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.pluginsRepository),
+        title: Text(
+            widget.updatesOnly ? loc.pluginsUpdate : loc.pluginsRepository),
         actions: [
           IconButton(
             icon: Icon(Icons.qr_code),

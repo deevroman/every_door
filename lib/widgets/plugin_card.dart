@@ -35,6 +35,11 @@ class PluginCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final versionLine = 'v${plugin.version}' +
+        (plugin.author == null ? '' : ' by ${plugin.author}');
+    final sourceLine = plugin.installed
+        ? (plugin.installedSource ?? plugin.source)?.toString()
+        : null;
     String description = _translateIfPossible(context, 'description')
         .replaceAll('\n\n', '#NL#')
         .replaceAll('\n', ' ')
@@ -46,12 +51,26 @@ class PluginCard extends StatelessWidget {
         children: [
           ListTile(
             title: Text(_translateIfPossible(context, 'name', plugin.name)),
-            subtitle: Text('v${plugin.version}' +
-                (plugin.author == null ? '' : ' by ${plugin.author}')),
+            subtitle: sourceLine == null
+                ? Text(versionLine)
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(versionLine),
+                      Text(
+                        sourceLine,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
             leading: plugin.icon?.getWidget(icon: false, size: 30),
             enabled: active,
             onTap: onMore,
-            trailing: short && onAction == null ? Icon(Icons.navigate_next) : null,
+            trailing:
+                short && onAction == null ? Icon(Icons.navigate_next) : null,
           ),
           if (!short && description.isNotEmpty)
             Padding(

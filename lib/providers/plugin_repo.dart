@@ -2,6 +2,7 @@
 // This file is a part of Every Door, distributed under GPL v3 or later version.
 // Refer to LICENSE file and https://www.gnu.org/licenses/gpl-3.0.html for details.
 import 'dart:async';
+import 'dart:convert' show jsonDecode, jsonEncode;
 import 'dart:io';
 
 import 'package:every_door/helpers/plugin_code.dart';
@@ -22,6 +23,7 @@ final pluginRepositoryProvider =
 
 class PluginRepository extends Notifier<List<Plugin>> {
   static final _logger = Logger('PluginRepository');
+  static const _kInstallMetadataFile = '.everydoor-install.json';
   late final Directory _pluginsDirectory;
 
   @override
@@ -121,6 +123,45 @@ class PluginRepository extends Notifier<List<Plugin>> {
     return Directory("${_pluginsDirectory.path}/$id");
   }
 
+  Future<Map<String, dynamic>> _readInstallMetadata(Directory path) async {
+    final file = File('${path.path}/$_kInstallMetadataFile');
+    if (!await file.exists()) return {};
+
+    try {
+      final data = jsonDecode(await file.readAsString());
+      if (data is! Map) return {};
+      final installedSource = data['installed_source'];
+      if (installedSource is String && installedSource.isNotEmpty) {
+        return {'installed_source': installedSource};
+      }
+    } on Exception catch (e, st) {
+      _logger.warning(
+          'Failed to parse install metadata for plugin in ${path.path}', e, st);
+    }
+
+    return {};
+  }
+
+  Future<void> _writeInstallMetadata(Directory path,
+      {Uri? installedSource}) async {
+    final file = File('${path.path}/$_kInstallMetadataFile');
+    if (installedSource == null) {
+      if (await file.exists()) {
+        try {
+          await file.delete();
+        } on Exception {
+          // Ignore file cleanup issues.
+        }
+      }
+      return;
+    }
+
+    await file.writeAsString(
+      jsonEncode({'installed_source': installedSource.toString()}),
+      flush: true,
+    );
+  }
+
   /// Reads the YAML file bundled with the plugin, and returns
   /// the plugin identifier, and the rest of the metadata.
   Future<PluginData> readPluginData(Directory path) async {
@@ -137,6 +178,7 @@ class PluginRepository extends Notifier<List<Plugin>> {
       throw PluginLoadException('Metadata should contain a map.');
     }
     final Map<String, dynamic> metadata = yamlData.toMap();
+    metadata.addAll(await _readInstallMetadata(path));
 
     // Check for required fields.
     final String? pluginId = metadata['id'];
@@ -193,7 +235,8 @@ class PluginRepository extends Notifier<List<Plugin>> {
   /// the directory after either error or success. Will throw
   /// exceptions when either file operations fail, or plugin
   /// cannot be enabled because of internal errors.
-  Future<Plugin> installFromTmpDir(Directory tmpPluginDir) async {
+  Future<Plugin> installFromTmpDir(Directory tmpPluginDir,
+      {Uri? installedSource}) async {
     try {
       // Read the metadata.
       final tmpPlugin = await readPluginData(tmpPluginDir);
@@ -204,6 +247,7 @@ class PluginRepository extends Notifier<List<Plugin>> {
       // Create the plugin directory and move files there.
       final pluginDir = _getPluginDirectory(tmpPlugin.id);
       await tmpPluginDir.rename(pluginDir.path);
+      await _writeInstallMetadata(pluginDir, installedSource: installedSource);
 
       final data = await readPluginData(pluginDir);
       final plugin = Plugin.fromData(data, pluginDir,
@@ -228,8 +272,8 @@ class PluginRepository extends Notifier<List<Plugin>> {
   }
 
   /// Unpacks the file and installs a plugin from it.
-  Future<void> install(File file) async {
+  Future<void> install(File file, {Uri? installedSource}) async {
     final tmpPluginDir = await unpackAndDelete(file);
-    await installFromTmpDir(tmpPluginDir);
+    await installFromTmpDir(tmpPluginDir, installedSource: installedSource);
   }
 }

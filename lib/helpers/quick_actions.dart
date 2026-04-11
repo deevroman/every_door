@@ -5,9 +5,12 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:every_door/fields/helpers/qr_code.dart';
 import 'package:every_door/generated/l10n/app_localizations.dart'
     show AppLocalizations;
+import 'package:every_door/providers/edpr.dart';
 import 'package:every_door/screens/settings/install_plugin.dart';
 import 'package:every_door/screens/settings/log.dart';
+import 'package:every_door/screens/settings/plugin_repo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> openSystemLog(BuildContext context) async {
   await Navigator.push(
@@ -51,3 +54,12 @@ Future<void> installPluginFromQrCode(BuildContext context) async {
   }
 }
 
+Future<void> checkPluginUpdates(BuildContext context) async {
+  ProviderScope.containerOf(context).invalidate(edprProvider);
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PluginRepositoryPage(updatesOnly: true),
+    ),
+  );
+}

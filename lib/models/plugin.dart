@@ -45,9 +45,13 @@ class PluginData {
   String? get author => data['author'];
   PluginVersionRange? get apiVersion =>
       data.containsKey('api') ? PluginVersionRange(data['api']) : null;
-
-  Uri? get url =>
+  Uri? get installedSource => data.containsKey('installed_source')
+      ? Uri.tryParse(data['installed_source'])
+      : null;
+  Uri? get source =>
       data.containsKey('source') ? Uri.tryParse(data['source']) : null;
+
+  Uri? get url => installedSource ?? source;
   Uri? get homepage =>
       data.containsKey('homepage') ? Uri.tryParse(data['homepage']) : null;
 
@@ -143,7 +147,8 @@ class Plugin extends PluginData {
   Directory resolveDirectory(String name) {
     final dir = Directory('${directory.path}/$name');
     if (!dir.absolute.path.startsWith(directory.absolute.path)) {
-      throw ArgumentError('Directory "$name" is not inside the plugin directory');
+      throw ArgumentError(
+          'Directory "$name" is not inside the plugin directory');
     }
     return dir;
   }
