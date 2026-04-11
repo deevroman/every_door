@@ -1,8 +1,7 @@
 // Copyright 2022-2025 Ilya Zverev
 // This file is a part of Every Door, distributed under GPL v3 or later version.
 // Refer to LICENSE file and https://www.gnu.org/licenses/gpl-3.0.html for details.
-import 'package:adaptive_dialog/adaptive_dialog.dart';
-import 'package:every_door/fields/helpers/qr_code.dart';
+import 'package:every_door/helpers/quick_actions.dart';
 import 'package:every_door/models/plugin.dart';
 import 'package:every_door/models/version.dart';
 import 'package:every_door/providers/edpr.dart';
@@ -37,42 +36,6 @@ class _PluginRepositoryPageState extends ConsumerState<PluginRepositoryPage> {
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  void _installFromQrCode(BuildContext context) async {
-    final loc = AppLocalizations.of(context)!;
-    final nav = Navigator.of(context);
-
-    Uri? detected;
-    if (QrCodeScanner.kEnabled) {
-      // We got a QR scanner? Then scan.
-      detected = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => QrCodeScanner(resolveRedirects: false),
-          ));
-    } else {
-      // If we've got no scanner, just present a text input dialog.
-      final List<String>? answer = await showTextInputDialog(
-        context: context,
-        title: loc.pluginsUrl,
-        textFields: [
-          DialogTextField(
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-          )
-        ],
-      );
-      if (answer != null && answer.isNotEmpty && answer.first.isNotEmpty) {
-        detected = Uri.tryParse(answer.first);
-      }
-    }
-
-    if (detected != null && nav.mounted) {
-      nav.push(
-        MaterialPageRoute(builder: (_) => InstallPluginPage(detected!)),
-      );
-    }
   }
 
   @override
@@ -135,7 +98,7 @@ class _PluginRepositoryPageState extends ConsumerState<PluginRepositoryPage> {
           IconButton(
             icon: Icon(Icons.qr_code),
             onPressed: () {
-              _installFromQrCode(context);
+              installPluginFromQrCode(context);
             },
           ),
         ],

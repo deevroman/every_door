@@ -4,7 +4,7 @@
 import 'dart:io' show Platform;
 
 import 'package:every_door/constants.dart';
-import 'package:every_door/screens/settings/log.dart';
+import 'package:every_door/helpers/quick_actions.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:flutter/material.dart';
@@ -103,10 +103,7 @@ class AboutPage extends StatelessWidget {
                 title: Text(loc.aboutViewLog),
                 trailing: Icon(Icons.navigate_next),
                 onPressed: (context) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LogDisplayPage()),
-                  );
+                  openSystemLog(context);
                 },
               ),
             ],

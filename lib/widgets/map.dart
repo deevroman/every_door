@@ -6,6 +6,7 @@ import 'dart:math' show min, max;
 
 import 'package:eval_annotation/eval_annotation.dart';
 import 'package:every_door/constants.dart';
+import 'package:every_door/helpers/quick_actions.dart';
 import 'package:every_door/helpers/geometry/closest_points.dart';
 import 'package:every_door/helpers/multi_icon.dart';
 import 'package:every_door/providers/overlays.dart';
@@ -376,6 +377,18 @@ class _CustomMapState extends ConsumerState<CustomMap> {
                   _controller.rotate(0.0);
                   _rotation = 0;
                 },
+              ),
+              // System log button
+              MapButton(
+                icon: MultiIcon.font(Icons.article_outlined),
+                tooltip: loc.aboutViewLog,
+                onPressed: openSystemLog,
+              ),
+              // Plugin install via QR code
+              MapButton(
+                icon: MultiIcon.font(Icons.qr_code_scanner),
+                tooltip: loc.fieldWebsiteQR,
+                onPressed: installPluginFromQrCode,
               ),
             ],
             ...widget.buttons,
