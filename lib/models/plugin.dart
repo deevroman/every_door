@@ -48,6 +48,13 @@ class PluginData {
   Uri? get installedSource => data.containsKey('installed_source')
       ? Uri.tryParse(data['installed_source'])
       : null;
+  DateTime? get installedAt => data.containsKey('installed_at')
+      ? DateTime.tryParse(data['installed_at'])
+      : null;
+  String? get installedArchiveSha256 =>
+      data['installed_archive_sha256'] is String
+          ? data['installed_archive_sha256']
+          : null;
   Uri? get source =>
       data.containsKey('source') ? Uri.tryParse(data['source']) : null;
 

@@ -3,6 +3,7 @@
 // Refer to LICENSE file and https://www.gnu.org/licenses/gpl-3.0.html for details.
 import 'dart:io';
 
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:every_door/models/plugin.dart';
 import 'package:every_door/models/version.dart';
 import 'package:every_door/providers/plugin_repo.dart';
@@ -121,74 +122,69 @@ class _InstallPluginPageState extends ConsumerState<InstallPluginPage> {
 
     final repo = ref.read(pluginRepositoryProvider.notifier);
 
-    final Plugin? installed = ref
-        .read(pluginRepositoryProvider)
-        .where((p) => p.id == data.id)
-        .firstOrNull;
-
-    if (installed == null ||
-        data.update ||
-        ((data.version ?? PluginVersion.zero) > installed.version)) {
-      if (data.url == null) {
-        throw Exception(
-            'No URL specified for installation of plugin "${data.id}"');
-      }
-
-      // Create a temporary file.
-      final tmpDir = await getTemporaryDirectory();
-      final File tmpPath = File('${tmpDir.path}/downloaded_plugin.zip');
-      if (await tmpPath.exists()) await tmpPath.delete();
-
-      // Download the file in chunks.
-      var client = http.Client();
-      try {
-        var request = http.Request('GET', data.url!);
-        var response = await client.send(request);
-        if (response.statusCode != 200) {
-          throw Exception(
-              "Could not download plugin, code ${response.statusCode} for ${data.url}");
-        }
-        final fileSize = ((response.contentLength ?? 0) / 1024 / 1024).round();
-        if (fileSize > 100) {
-          throw Exception(
-              'Would not download a file bigger than 100 MB (got $fileSize)');
-        }
-        await for (final chunk in response.stream) {
-          await tmpPath.writeAsBytes(chunk, mode: FileMode.append);
-        }
-      } finally {
-        client.close();
-      }
-
-      // Now unpack and install.
-      final pluginDir = await repo.unpackAndDelete(tmpPath);
-      final tmpData = await repo.readPluginData(pluginDir);
-      if (tmpData.id != data.id && data.id != 'my') {
-        throw Exception(
-            'The URL implies plugin id "${data.id}", but it actually is "${tmpData.id}"');
-      }
-      final bundledUrl = tmpData.url;
-      if (bundledUrl != null && bundledUrl != data.url) {
-        throw Exception(
-            'The plugin supplies URL different from ${data.url}: $bundledUrl');
-      }
-      if (!(tmpData.apiVersion?.matches(kApiVersion) ?? true)) {
-        throw Exception(
-            'The plugin API version (${tmpData.apiVersion}) does not match the current version ($kApiVersion).');
-      }
-
-      final plugin =
-          await repo.installFromTmpDir(pluginDir, installedSource: data.url);
-
-      if (plugin.intro != null && _needShowIntro(plugin) && mounted) {
-        _logger.info('Showing intro for ${plugin.id}!');
-        _saveIntroShown(plugin);
-        await plugin.showIntro(context);
-      }
-    } else {
-      // TODO: update the currently installed plugin, and enable it.
+    if (data.url == null) {
       throw Exception(
-          'The latest version of the plugin has already been installed.');
+          'No URL specified for installation of plugin "${data.id}"');
+    }
+
+    // Create a temporary file.
+    final tmpDir = await getTemporaryDirectory();
+    final File tmpPath = File('${tmpDir.path}/downloaded_plugin.zip');
+    if (await tmpPath.exists()) await tmpPath.delete();
+
+    // Download the file in chunks.
+    var client = http.Client();
+    try {
+      var request = http.Request('GET', data.url!);
+      var response = await client.send(request);
+      if (response.statusCode != 200) {
+        throw Exception(
+            "Could not download plugin, code ${response.statusCode} for ${data.url}");
+      }
+      final fileSize = ((response.contentLength ?? 0) / 1024 / 1024).round();
+      if (fileSize > 100) {
+        throw Exception(
+            'Would not download a file bigger than 100 MB (got $fileSize)');
+      }
+      await for (final chunk in response.stream) {
+        await tmpPath.writeAsBytes(chunk, mode: FileMode.append);
+      }
+    } finally {
+      client.close();
+    }
+    final archiveSha256 =
+        sha256.convert(await tmpPath.readAsBytes()).toString();
+
+    // Now unpack and install.
+    final pluginDir = await repo.unpackAndDelete(tmpPath);
+    final tmpData = await repo.readPluginData(pluginDir);
+    if (tmpData.id != data.id && data.id != 'my') {
+      throw Exception(
+          'The URL implies plugin id "${data.id}", but it actually is "${tmpData.id}"');
+    }
+    final bundledUrl = tmpData.url;
+    if (bundledUrl != null && bundledUrl != data.url) {
+      throw Exception(
+          'The plugin supplies URL different from ${data.url}: $bundledUrl');
+    }
+    if (!(tmpData.apiVersion?.matches(kApiVersion) ?? true)) {
+      throw Exception(
+          'The plugin API version (${tmpData.apiVersion}) does not match the current version ($kApiVersion).');
+    }
+
+    final plugin = await repo.installFromTmpDir(
+      pluginDir,
+      installedSource: data.url,
+      installMetadata: {
+        'installed_at': DateTime.now().toUtc().toIso8601String(),
+        'installed_archive_sha256': archiveSha256,
+      },
+    );
+
+    if (plugin.intro != null && _needShowIntro(plugin) && mounted) {
+      _logger.info('Showing intro for ${plugin.id}!');
+      _saveIntroShown(plugin);
+      await plugin.showIntro(context);
     }
 
     if (mounted) {

@@ -1,8 +1,8 @@
 // Copyright 2022-2025 Ilya Zverev
 // This file is a part of Every Door, distributed under GPL v3 or later version.
 // Refer to LICENSE file and https://www.gnu.org/licenses/gpl-3.0.html for details.
+import 'package:every_door/helpers/quick_actions.dart';
 import 'package:every_door/providers/plugin_manager.dart';
-import 'package:every_door/providers/edpr.dart';
 import 'package:every_door/providers/plugin_repo.dart';
 import 'package:every_door/screens/settings/manage_plugin.dart';
 import 'package:every_door/screens/settings/plugin_repo.dart';
@@ -66,10 +66,7 @@ class _PluginSettingsPageState extends ConsumerState<PluginSettingsPage> {
             icon: Icon(Icons.system_update_alt),
             tooltip: loc.pluginsUpdate,
             onPressed: () {
-              ref.invalidate(edprProvider);
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => PluginRepositoryPage(updatesOnly: true),
-              ));
+              checkPluginUpdates(context);
             },
           ),
         ],

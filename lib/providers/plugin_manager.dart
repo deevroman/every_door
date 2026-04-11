@@ -154,7 +154,7 @@ class PluginManager extends Notifier<Set<String>> {
     }
 
     if (plugin.instance != null) {
-      try {
+        try {
         ref.read(authProvider.notifier).removePrefixed('${plugin.id}#');
         await plugin.instance
             ?.uninstall(EveryDoorApp(plugin: plugin, ref: ref));

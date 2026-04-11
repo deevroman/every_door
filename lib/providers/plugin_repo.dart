@@ -132,7 +132,16 @@ class PluginRepository extends Notifier<List<Plugin>> {
       if (data is! Map) return {};
       final installedSource = data['installed_source'];
       if (installedSource is String && installedSource.isNotEmpty) {
-        return {'installed_source': installedSource};
+        return {
+          'installed_source': installedSource,
+          if (data['installed_at'] is String &&
+              DateTime.tryParse(data['installed_at']) != null)
+            'installed_at': data['installed_at'],
+          if (data['installed_archive_sha256'] is String &&
+              RegExp(r'^[0-9a-f]{64}$')
+                  .hasMatch(data['installed_archive_sha256']))
+            'installed_archive_sha256': data['installed_archive_sha256'],
+        };
       }
     } on Exception catch (e, st) {
       _logger.warning(
@@ -143,9 +152,15 @@ class PluginRepository extends Notifier<List<Plugin>> {
   }
 
   Future<void> _writeInstallMetadata(Directory path,
-      {Uri? installedSource}) async {
+      {Uri? installedSource, Map<String, dynamic>? installMetadata}) async {
     final file = File('${path.path}/$_kInstallMetadataFile');
-    if (installedSource == null) {
+    final payload = <String, dynamic>{
+      if (installedSource != null)
+        'installed_source': installedSource.toString(),
+      if (installMetadata != null) ...installMetadata,
+    };
+
+    if (payload.isEmpty) {
       if (await file.exists()) {
         try {
           await file.delete();
@@ -157,7 +172,7 @@ class PluginRepository extends Notifier<List<Plugin>> {
     }
 
     await file.writeAsString(
-      jsonEncode({'installed_source': installedSource.toString()}),
+      jsonEncode(payload),
       flush: true,
     );
   }
@@ -179,6 +194,14 @@ class PluginRepository extends Notifier<List<Plugin>> {
     }
     final Map<String, dynamic> metadata = yamlData.toMap();
     metadata.addAll(await _readInstallMetadata(path));
+    if (!metadata.containsKey('installed_at')) {
+      try {
+        metadata['installed_at'] =
+            (await metadataFile.stat()).modified.toUtc().toIso8601String();
+      } on Exception {
+        // No fallback timestamp.
+      }
+    }
 
     // Check for required fields.
     final String? pluginId = metadata['id'];
@@ -236,7 +259,7 @@ class PluginRepository extends Notifier<List<Plugin>> {
   /// exceptions when either file operations fail, or plugin
   /// cannot be enabled because of internal errors.
   Future<Plugin> installFromTmpDir(Directory tmpPluginDir,
-      {Uri? installedSource}) async {
+      {Uri? installedSource, Map<String, dynamic>? installMetadata}) async {
     try {
       // Read the metadata.
       final tmpPlugin = await readPluginData(tmpPluginDir);
@@ -247,7 +270,8 @@ class PluginRepository extends Notifier<List<Plugin>> {
       // Create the plugin directory and move files there.
       final pluginDir = _getPluginDirectory(tmpPlugin.id);
       await tmpPluginDir.rename(pluginDir.path);
-      await _writeInstallMetadata(pluginDir, installedSource: installedSource);
+      await _writeInstallMetadata(pluginDir,
+          installedSource: installedSource, installMetadata: installMetadata);
 
       final data = await readPluginData(pluginDir);
       final plugin = Plugin.fromData(data, pluginDir,
@@ -272,8 +296,10 @@ class PluginRepository extends Notifier<List<Plugin>> {
   }
 
   /// Unpacks the file and installs a plugin from it.
-  Future<void> install(File file, {Uri? installedSource}) async {
+  Future<void> install(File file,
+      {Uri? installedSource, Map<String, dynamic>? installMetadata}) async {
     final tmpPluginDir = await unpackAndDelete(file);
-    await installFromTmpDir(tmpPluginDir, installedSource: installedSource);
+    await installFromTmpDir(tmpPluginDir,
+        installedSource: installedSource, installMetadata: installMetadata);
   }
 }

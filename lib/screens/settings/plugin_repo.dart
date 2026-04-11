@@ -3,7 +3,6 @@
 // Refer to LICENSE file and https://www.gnu.org/licenses/gpl-3.0.html for details.
 import 'package:every_door/helpers/quick_actions.dart';
 import 'package:every_door/models/plugin.dart';
-import 'package:every_door/models/version.dart';
 import 'package:every_door/providers/edpr.dart';
 import 'package:every_door/providers/plugin_repo.dart';
 import 'package:every_door/screens/settings/install_plugin.dart';
@@ -45,9 +44,8 @@ class _PluginRepositoryPageState extends ConsumerState<PluginRepositoryPage> {
     final loc = AppLocalizations.of(context)!;
     final AsyncValue<List<RemotePlugin>> plugins = ref.watch(edprProvider);
 
-    final Map<String, PluginVersion> installed = Map.fromEntries(ref
-        .read(pluginRepositoryProvider)
-        .map((p) => MapEntry(p.id, p.version)));
+    final Map<String, Plugin> installed = Map.fromEntries(
+        ref.read(pluginRepositoryProvider).map((p) => MapEntry(p.id, p)));
 
     List<Widget> items;
     if (plugins.isLoading) {
@@ -72,25 +70,48 @@ class _PluginRepositoryPageState extends ConsumerState<PluginRepositoryPage> {
       }
       if (!_experimental) list.removeWhere((p) => p.experimental);
       list.sort((a, b) => b.downloads.compareTo(a.downloads));
-      items = list
-          .where((p) {
-            final installedVersion = installed[p.id];
-            if (installedVersion == null) return !widget.updatesOnly;
-            return p.version.fresherThan(installedVersion);
-          })
-          .map((p) => PluginCard(
-                plugin: p,
-                actionText: installed.containsKey(p.id)
-                    ? loc.pluginsUpdate.toUpperCase()
-                    : loc.pluginsInstall.toUpperCase(),
-                onAction: () {
+      items = list.where((p) {
+        final installedPlugin = installed[p.id];
+        if (installedPlugin == null) return !widget.updatesOnly;
+        return p.version.fresherThan(installedPlugin.version) ||
+            (p.url != null &&
+                installedPlugin.url != null &&
+                p.url.toString() != installedPlugin.url.toString()) ||
+            (installedPlugin.installedAt != null &&
+                p.updated
+                    .toUtc()
+                    .isAfter(installedPlugin.installedAt!.toUtc()));
+      }).map((p) {
+        final downloadUrl = p.url;
+        final installUri = downloadUrl == null
+            ? null
+            : Uri.https(
+                'plugins.every-door.app',
+                '/i/${p.id}',
+                {
+                  'url': downloadUrl.toString(),
+                  'version': p.version.toString(),
+                  'update': 'true',
+                },
+              );
+        return PluginCard(
+          plugin: p,
+          actionText: installUri == null
+              ? null
+              : installed.containsKey(p.id)
+                  ? loc.pluginsUpdate.toUpperCase()
+                  : loc.pluginsInstall.toUpperCase(),
+          onAction: installUri == null
+              ? null
+              : () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => InstallPluginPage(p.url!)),
+                      builder: (_) => InstallPluginPage(installUri),
+                    ),
                   );
                 },
-              ))
-          .toList();
+        );
+      }).toList();
     }
 
     return Scaffold(

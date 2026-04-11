@@ -70,8 +70,17 @@ class _ManagePluginPageState extends ConsumerState<ManagePluginPage> {
               ListTile(
                 title: Text('Upgrade'),
                 onTap: () {
+                  final installUri = Uri.https(
+                    'plugins.every-door.app',
+                    '/i/${widget.plugin.id}',
+                    {
+                      'url': widget.plugin.url.toString(),
+                      'version': widget.plugin.version.toString(),
+                      'update': 'true',
+                    },
+                  );
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (_) => InstallPluginPage(widget.plugin.url!),
+                    builder: (_) => InstallPluginPage(installUri),
                   ));
                 },
               ),
