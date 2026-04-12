@@ -52,7 +52,6 @@ class $EveryDoorApp implements $Instance {
               ),
               false,
             ),
-
             BridgeParameter(
               'ref',
               BridgeTypeAnnotation(
@@ -68,7 +67,6 @@ class $EveryDoorApp implements $Instance {
               ),
               false,
             ),
-
             BridgeParameter(
               'onRepaint',
               BridgeTypeAnnotation(
@@ -91,7 +89,6 @@ class $EveryDoorApp implements $Instance {
         isFactory: false,
       ),
     },
-
     methods: {
       'repaint': BridgeMethodDef(
         BridgeFunctionDef(
@@ -100,7 +97,6 @@ class $EveryDoorApp implements $Instance {
           params: [],
         ),
       ),
-
       'addOverlay': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -122,7 +118,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'addMode': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -144,7 +139,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'removeMode': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -158,7 +152,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'eachMode': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -196,7 +189,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'addAuthProvider': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -207,7 +199,6 @@ class $EveryDoorApp implements $Instance {
               BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string, [])),
               false,
             ),
-
             BridgeParameter(
               'provider',
               BridgeTypeAnnotation(
@@ -224,7 +215,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'auth': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(
@@ -246,7 +236,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'registerFieldType': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -257,7 +246,6 @@ class $EveryDoorApp implements $Instance {
               BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string, [])),
               false,
             ),
-
             BridgeParameter(
               'builder',
               BridgeTypeAnnotation(
@@ -297,7 +285,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'registerField': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -308,7 +295,6 @@ class $EveryDoorApp implements $Instance {
               BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string, [])),
               false,
             ),
-
             BridgeParameter(
               'field',
               BridgeTypeAnnotation(
@@ -325,7 +311,6 @@ class $EveryDoorApp implements $Instance {
           ],
         ),
       ),
-
       'addEditorButton': BridgeMethodDef(
         BridgeFunctionDef(
           returns: BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.voidType)),
@@ -341,6 +326,70 @@ class $EveryDoorApp implements $Instance {
                   ),
                   [],
                 ),
+              ),
+              false,
+            ),
+          ],
+        ),
+      ),
+      'pickImageFromGallery': BridgeMethodDef(
+        BridgeFunctionDef(
+          returns: BridgeTypeAnnotation(
+            BridgeTypeRef(CoreTypes.future, [
+              BridgeTypeAnnotation(
+                BridgeTypeRef(CoreTypes.string),
+                nullable: true,
+              ),
+            ]),
+          ),
+          namedParams: [],
+          params: [],
+        ),
+      ),
+      'uploadMultipartRequest': BridgeMethodDef(
+        BridgeFunctionDef(
+          returns: BridgeTypeAnnotation(
+            BridgeTypeRef(CoreTypes.future, [
+              BridgeTypeAnnotation(
+                BridgeTypeRef(CoreTypes.string),
+                nullable: true,
+              ),
+            ]),
+          ),
+          namedParams: [],
+          params: [
+            BridgeParameter(
+              'endpoint',
+              BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string, [])),
+              false,
+            ),
+            BridgeParameter(
+              'filePath',
+              BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string, [])),
+              false,
+            ),
+            BridgeParameter(
+              'uploadPath',
+              BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string, [])),
+              false,
+            ),
+            BridgeParameter(
+              'headers',
+              BridgeTypeAnnotation(
+                BridgeTypeRef(CoreTypes.map, [
+                  BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string)),
+                  BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string)),
+                ]),
+              ),
+              false,
+            ),
+            BridgeParameter(
+              'fields',
+              BridgeTypeAnnotation(
+                BridgeTypeRef(CoreTypes.map, [
+                  BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string)),
+                  BridgeTypeAnnotation(BridgeTypeRef(CoreTypes.string)),
+                ]),
               ),
               false,
             ),
@@ -378,7 +427,6 @@ class $EveryDoorApp implements $Instance {
         ),
         isStatic: false,
       ),
-
       'onRepaint': BridgeFieldDef(
         BridgeTypeAnnotation(
           BridgeTypeRef.genericFunction(
@@ -392,7 +440,6 @@ class $EveryDoorApp implements $Instance {
         ),
         isStatic: false,
       ),
-
       'preferences': BridgeFieldDef(
         BridgeTypeAnnotation(
           BridgeTypeRef(
@@ -405,7 +452,6 @@ class $EveryDoorApp implements $Instance {
         ),
         isStatic: false,
       ),
-
       'providers': BridgeFieldDef(
         BridgeTypeAnnotation(
           BridgeTypeRef(
@@ -418,7 +464,6 @@ class $EveryDoorApp implements $Instance {
         ),
         isStatic: false,
       ),
-
       'events': BridgeFieldDef(
         BridgeTypeAnnotation(
           BridgeTypeRef(
@@ -431,7 +476,6 @@ class $EveryDoorApp implements $Instance {
         ),
         isStatic: false,
       ),
-
       'logger': BridgeFieldDef(
         BridgeTypeAnnotation(
           BridgeTypeRef(
@@ -528,6 +572,12 @@ class $EveryDoorApp implements $Instance {
 
       case 'addEditorButton':
         return __addEditorButton;
+
+      case 'pickImageFromGallery':
+        return __pickImageFromGallery;
+
+      case 'uploadMultipartRequest':
+        return __uploadMultipartRequest;
     }
     return _superclass.$getProperty(runtime, identifier);
   }
@@ -636,6 +686,95 @@ class $EveryDoorApp implements $Instance {
     final self = target! as $EveryDoorApp;
     self.$value.addEditorButton(args[0]!.$value);
     return null;
+  }
+
+  static const $Function __pickImageFromGallery =
+      $Function(_pickImageFromGallery);
+  static $String _toBridgeString(dynamic value) =>
+      $String(value is String ? value : '');
+
+  static $Value? _pickImageFromGallery(
+    Runtime runtime,
+    $Value? target,
+    List<$Value?> args,
+  ) {
+    final self = target! as $EveryDoorApp;
+    return $Future.wrap(
+      self.$value.pickImageFromGallery().then(
+            (value) => _toBridgeString(value),
+          ),
+    );
+  }
+
+  static const $Function __uploadMultipartRequest =
+      $Function(_uploadMultipartRequest);
+  static String _unwrapStringArg(dynamic value) {
+    if (value is $Value) {
+      final dynamic inner = value.$value;
+      return inner is String ? inner : '';
+    }
+    return value is String ? value : '';
+  }
+
+  static dynamic _unwrapBridgeValue(dynamic value) {
+    if (value is $Value) {
+      return value.$value;
+    }
+    return value;
+  }
+
+  static Map<String, String> _unwrapStringMapArg(dynamic value) {
+    final dynamic raw = _unwrapBridgeValue(value);
+    if (raw is! Map) {
+      throw StateError('Expected Map<String, String>, got ${raw.runtimeType}');
+    }
+    final Map<String, String> result = <String, String>{};
+    for (final entry in raw.entries) {
+      final dynamic keyRaw = _unwrapBridgeValue(entry.key);
+      final dynamic valueRaw = _unwrapBridgeValue(entry.value);
+      if (keyRaw is! String || valueRaw is! String) {
+        throw StateError(
+          'Expected Map<String, String> entry, got key=${keyRaw.runtimeType}, value=${valueRaw.runtimeType}',
+        );
+      }
+      result[keyRaw] = valueRaw;
+    }
+    return result;
+  }
+
+  static $Value? _uploadMultipartRequest(
+    Runtime runtime,
+    $Value? target,
+    List args,
+  ) {
+    final self = target! as $EveryDoorApp;
+    final List<Object?> rawArgs = runtime.args;
+    final dynamic first = rawArgs.isNotEmpty ? rawArgs[0] : null;
+    final int offset = (first is EveryDoorApp ||
+            first is $EveryDoorApp ||
+            (first is $Value && first.$value is EveryDoorApp))
+        ? 1
+        : 0;
+    final String endpoint = _unwrapStringArg(rawArgs[offset + 0]);
+    final String filePath = _unwrapStringArg(rawArgs[offset + 1]);
+    final String uploadPath = _unwrapStringArg(rawArgs[offset + 2]);
+    final Map<String, String> headers = _unwrapStringMapArg(
+      rawArgs[offset + 3],
+    );
+    final Map<String, String> fields = _unwrapStringMapArg(
+      rawArgs[offset + 4],
+    );
+    return $Future.wrap(
+      self.$value
+          .uploadMultipartRequest(
+            endpoint,
+            filePath,
+            uploadPath,
+            headers,
+            fields,
+          )
+          .then((value) => _toBridgeString(value)),
+    );
   }
 
   @override

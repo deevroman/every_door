@@ -9,8 +9,12 @@ import 'package:dart_eval/dart_eval_security.dart';
 import 'package:every_door/models/plugin.dart';
 import 'package:every_door/plugins/every_door_plugin.dart';
 import 'package:flutter_eval/flutter_eval.dart';
+// ignore: implementation_imports
+import 'package:flutter_eval/src/flutter_eval_security.dart'
+    as flutter_eval_security;
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_map_eval/flutter_map_eval.dart' as fme;
 import 'package:every_door/plugins/bindings/every_door_eval.dart' as ede;
 
@@ -87,6 +91,13 @@ class PluginCode {
     for (final p in fme.plugins) runtime.addPlugin(p);
     runtime.addPlugin(ede.EveryDoorPlugin());
     runtime.grant(FilesystemPermission.directory(plugin.directory.path));
+    // image_picker writes selected files to app temp/cache; allow plugin to read them.
+    final tmpDir = await getTemporaryDirectory();
+    runtime.grant(FilesystemPermission.directory(tmpDir.path));
+    runtime.grant(
+      flutter_eval_security.MethodChannelPermission(
+          'plugins.flutter.io/image_picker'),
+    );
     final apis = plugin.data['accesses'];
     if (apis != null) {
       if (apis is String) {
